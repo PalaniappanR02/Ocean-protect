@@ -1,8 +1,0 @@
-{
-  "hazard_keywords": {
-    "high_waves": ["ದೊಡ್ಡ ಅಲೆ", "ಸಮುದ್ರ ಉದ್ರಿಕ್ತ"],
-    "tsunami": ["ಸುನಾಮಿ"],
-    "coastal_flooding": ["ಪ್ರವಾಹ", "ಸಮುದ್ರ ನೀರು"]
-  },
-  "urgency_keywords": ["ರಕ್ಷಣೆ", "ಅಪಾಯ"]
-}

@@ -1,7 +1,0 @@
-api/node_modules
-api/dist
-api/uploads/*
-classifier/.pytest_cache
-classifier/**/__pycache__
-.git
-*.log

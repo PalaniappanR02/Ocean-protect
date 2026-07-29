@@ -1,1 +1,0 @@
-export { ConfidenceBarChart } from './ConfidenceBarCharts';
