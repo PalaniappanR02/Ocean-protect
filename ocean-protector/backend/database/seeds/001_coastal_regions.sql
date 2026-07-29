@@ -1,0 +1,23 @@
+INSERT INTO coastal_regions (state_code, state_name, district_name, display_name, primary_language_code, secondary_language_codes, latitude, longitude, location, coastal_priority) VALUES
+('TN', 'Tamil Nadu', 'Chennai', 'Chennai Coast', 'ta', '["en"]', 13.0827, 80.2707, ST_SetSRID(ST_MakePoint(80.2707, 13.0827), 4326)::geography, 1),
+('TN', 'Tamil Nadu', 'Cuddalore', 'Cuddalore Coast', 'ta', '["en"]', 11.7464, 79.7734, ST_SetSRID(ST_MakePoint(79.7734, 11.7464), 4326)::geography, 1),
+('TN', 'Tamil Nadu', 'Nagapattinam', 'Nagapattinam Coast', 'ta', '["en"]', 10.7664, 79.8428, ST_SetSRID(ST_MakePoint(79.8428, 10.7664), 4326)::geography, 1),
+('TN', 'Tamil Nadu', 'Mayiladuthurai', 'Mayiladuthurai Coast', 'ta', '["en"]', 11.1037, 79.6497, ST_SetSRID(ST_MakePoint(79.6497, 11.1037), 4326)::geography, 2),
+('TN', 'Tamil Nadu', 'Ramanathapuram', 'Ramanathapuram Coast', 'ta', '["en"]', 9.3678, 78.3006, ST_SetSRID(ST_MakePoint(78.3006, 9.3678), 4326)::geography, 1),
+('TN', 'Tamil Nadu', 'Thoothukudi', 'Thoothukudi Coast', 'ta', '["en"]', 8.7642, 78.1348, ST_SetSRID(ST_MakePoint(78.1348, 8.7642), 4326)::geography, 1),
+('TN', 'Tamil Nadu', 'Kanyakumari', 'Kanyakumari Coast', 'ta', '["en"]', 8.0883, 77.5385, ST_SetSRID(ST_MakePoint(77.5385, 8.0883), 4326)::geography, 1),
+('KL', 'Kerala', 'Thiruvananthapuram', 'Thiruvananthapuram Coast', 'ml', '["en"]', 8.5241, 76.9366, ST_SetSRID(ST_MakePoint(76.9366, 8.5241), 4326)::geography, 1),
+('KL', 'Kerala', 'Alappuzha', 'Alappuzha Coast', 'ml', '["en"]', 9.4981, 76.3388, ST_SetSRID(ST_MakePoint(76.3388, 9.4981), 4326)::geography, 1),
+('KL', 'Kerala', 'Ernakulam', 'Ernakulam Coast', 'ml', '["en"]', 9.9816, 76.2999, ST_SetSRID(ST_MakePoint(76.2999, 9.9816), 4326)::geography, 1),
+('KL', 'Kerala', 'Kozhikode', 'Kozhikode Coast', 'ml', '["en"]', 11.2588, 75.7804, ST_SetSRID(ST_MakePoint(75.7804, 11.2588), 4326)::geography, 1),
+('KL', 'Kerala', 'Kannur', 'Kannur Coast', 'ml', '["en"]', 11.8745, 75.3704, ST_SetSRID(ST_MakePoint(75.3704, 11.8745), 4326)::geography, 1),
+('KL', 'Kerala', 'Kasaragod', 'Kasaragod Coast', 'ml', '["en"]', 12.4996, 74.9867, ST_SetSRID(ST_MakePoint(74.9867, 12.4996), 4326)::geography, 1),
+('KA', 'Karnataka', 'Dakshina Kannada', 'Dakshina Kannada Coast', 'kn', '["en"]', 12.8700, 74.8800, ST_SetSRID(ST_MakePoint(74.8800, 12.8700), 4326)::geography, 1),
+('KA', 'Karnataka', 'Udupi', 'Udupi Coast', 'kn', '["en"]', 13.3409, 74.7421, ST_SetSRID(ST_MakePoint(74.7421, 13.3409), 4326)::geography, 1),
+('KA', 'Karnataka', 'Uttara Kannada', 'Uttara Kannada Coast', 'kn', '["en"]', 14.7889, 74.4278, ST_SetSRID(ST_MakePoint(74.4278, 14.7889), 4326)::geography, 1),
+('AP', 'Andhra Pradesh', 'Srikakulam', 'Srikakulam Coast', 'te', '["en"]', 18.2969, 83.8993, ST_SetSRID(ST_MakePoint(83.8993, 18.2969), 4326)::geography, 1),
+('AP', 'Andhra Pradesh', 'Visakhapatnam', 'Visakhapatnam Coast', 'te', '["en"]', 17.6868, 83.2185, ST_SetSRID(ST_MakePoint(83.2185, 17.6868), 4326)::geography, 1),
+('AP', 'Andhra Pradesh', 'Kakinada', 'Kakinada Coast', 'te', '["en"]', 16.9890, 82.2475, ST_SetSRID(ST_MakePoint(82.2475, 16.9890), 4326)::geography, 1),
+('AP', 'Andhra Pradesh', 'Krishna', 'Krishna Coast', 'te', '["en"]', 16.1736, 81.2586, ST_SetSRID(ST_MakePoint(81.2586, 16.1736), 4326)::geography, 1),
+('AP', 'Andhra Pradesh', 'Nellore', 'Nellore Coast', 'te', '["en"]', 14.4426, 79.9865, ST_SetSRID(ST_MakePoint(79.9865, 14.4426), 4326)::geography, 1)
+ON CONFLICT DO NOTHING;

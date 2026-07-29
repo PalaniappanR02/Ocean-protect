@@ -1,0 +1,280 @@
+import type { HazardReport, HazardType, Severity, ReportStatus } from '@/types';
+import { generateClientReportId, generateTrackingId } from '@/lib/utils';
+
+const now = new Date();
+const minutesAgo = (m: number) => new Date(now.getTime() - m * 60000).toISOString();
+const hoursAgo = (h: number) => new Date(now.getTime() - h * 3600000).toISOString();
+const daysAgo = (d: number) => new Date(now.getTime() - d * 86400000).toISOString();
+
+interface SeedReport {
+  hazardType: HazardType;
+  title: string;
+  description: string;
+  languageCode: string;
+  isAnonymous: boolean;
+  reporterName?: string;
+  reporterPhone?: string;
+  latitude: number;
+  longitude: number;
+  stateCode: string;
+  districtName: string;
+  observedAt: string;
+  receivedAt: string;
+  severity: Severity;
+  status: ReportStatus;
+  confidenceScore: number;
+  keywordsMatched: string[];
+  reportType?: 'citizen' | 'analyst';
+}
+
+const seedReports: SeedReport[] = [
+  {
+    hazardType: 'high_waves',
+    title: 'Unusually high waves hitting Marina Beach',
+    description: 'Waves are reaching the road near Marina Beach lighthouse. Water has crossed the retaining wall in three places. Several tourists are moving to higher ground.',
+    languageCode: 'en', isAnonymous: false, reporterName: 'Rajesh Kumar', reporterPhone: '+91-98765-43210',
+    latitude: 13.0500, longitude: 80.2827, stateCode: 'TN', districtName: 'Chennai',
+    observedAt: minutesAgo(8), receivedAt: minutesAgo(7), severity: 'warning', status: 'verified',
+    confidenceScore: 86,
+    keywordsMatched: ['high waves', 'marina', 'retaining wall', 'tourists', 'higher ground'],
+  },
+  {
+    hazardType: 'oil_spill',
+    title: 'Oil slick spreading near Kochi port',
+    description: 'Rainbow-coloured oil sheen visible on water surface near Willingdon Island. Approximately 200 metres wide and spreading southward. Strong smell of diesel.',
+    languageCode: 'en', isAnonymous: false, reporterName: 'Priya Menon', reporterPhone: '+91-98400-12345',
+    latitude: 9.9700, longitude: 76.2700, stateCode: 'KL', districtName: 'Ernakulam',
+    observedAt: minutesAgo(15), receivedAt: minutesAgo(14), severity: 'critical', status: 'under_review',
+    confidenceScore: 82,
+    keywordsMatched: ['oil', 'sheen', 'diesel', 'port', 'spreading'],
+  },
+  {
+    hazardType: 'coastal_flooding',
+    title: 'Low-lying areas near Alappuzha beach inundated',
+    description: 'Sea water has entered several houses in the Ambalappuzha area near the beach. About 50 families affected. Water level knee-deep and rising.',
+    languageCode: 'en', isAnonymous: true,
+    latitude: 9.4900, longitude: 76.3600, stateCode: 'KL', districtName: 'Alappuzha',
+    observedAt: minutesAgo(23), receivedAt: minutesAgo(22), severity: 'critical', status: 'verified',
+    confidenceScore: 91,
+    keywordsMatched: ['flooding', 'inundated', 'houses', 'families', 'rising'],
+  },
+  {
+    hazardType: 'tsunami',
+    title: 'Sea receding rapidly near Nagapattinam coast',
+    description: 'The sea has pulled back more than 200 metres from the normal shoreline in the last 15 minutes. Fishermen are running inland. This could be a tsunami warning sign.',
+    languageCode: 'en', isAnonymous: false, reporterName: 'Senthil Vel', reporterPhone: '+91-90000-56789',
+    latitude: 10.7656, longitude: 79.8428, stateCode: 'TN', districtName: 'Nagapattinam',
+    observedAt: minutesAgo(3), receivedAt: minutesAgo(2), severity: 'critical', status: 'verified',
+    confidenceScore: 95,
+    keywordsMatched: ['sea receding', 'tsunami', 'running inland', '200 metres'],
+  },
+  {
+    hazardType: 'coastal_erosion',
+    title: 'Beach erosion accelerating in Ullal',
+    description: 'Large section of beach has eroded overnight near Ullal jetty. Coastal road is now within 5 metres of the cliff edge. Several coconut trees have fallen into the sea.',
+    languageCode: 'en', isAnonymous: false, reporterName: 'Mohammed Yusuf', reporterPhone: '+91-97400-98765',
+    latitude: 12.8000, longitude: 74.8500, stateCode: 'KA', districtName: 'Dakshina Kannada',
+    observedAt: hoursAgo(2), receivedAt: hoursAgo(1), severity: 'warning', status: 'under_review',
+    confidenceScore: 74,
+    keywordsMatched: ['erosion', 'cliff', 'coconut trees', 'fallen'],
+  },
+  {
+    hazardType: 'damaged_vessel',
+    title: 'Fishing boat taking water near Kakinada coast',
+    description: 'A fishing boat with 5 crew members is taking water about 2 nautical miles off the Kakinada coast. They are wearing life jackets and requesting immediate assistance.',
+    languageCode: 'en', isAnonymous: false, reporterName: 'Gangadhara Rao', reporterPhone: '+91-93400-11111',
+    latitude: 16.9600, longitude: 82.3500, stateCode: 'AP', districtName: 'East Godavari',
+    observedAt: minutesAgo(18), receivedAt: minutesAgo(17), severity: 'critical', status: 'verified',
+    confidenceScore: 88,
+    keywordsMatched: ['boat', 'taking water', 'life jackets', 'assistance', 'crew'],
+  },
+  {
+    hazardType: 'strong_current',
+    title: 'Dangerous rip current at Vizag Rushikonda beach',
+    description: 'Strong rip current visible at Rushikonda beach. Red flags posted but tourists still entering water. At least 3 people seen struggling earlier.',
+    languageCode: 'en', isAnonymous: false, reporterName: 'Anita Reddy', reporterPhone: '+91-94400-22222',
+    latitude: 17.7800, longitude: 83.3400, stateCode: 'AP', districtName: 'Visakhapatnam',
+    observedAt: hoursAgo(1), receivedAt: minutesAgo(55), severity: 'warning', status: 'verified',
+    confidenceScore: 80,
+    keywordsMatched: ['rip current', 'red flags', 'struggling', 'tourists'],
+  },
+  {
+    hazardType: 'marine_pollution',
+    title: 'Plastic and debris washing ashore at Kozhikode beach',
+    description: 'Large quantity of plastic waste and fishing nets washing ashore near Kozhikode beach park. Unusual volume — seems like a cargo spill. Water has milky appearance.',
+    languageCode: 'en', isAnonymous: true,
+    latitude: 11.2588, longitude: 75.7804, stateCode: 'KL', districtName: 'Kozhikode',
+    observedAt: hoursAgo(3), receivedAt: hoursAgo(2), severity: 'advisory', status: 'screening',
+    confidenceScore: 65,
+    keywordsMatched: ['plastic', 'debris', 'pollution', 'fishing nets'],
+  },
+  {
+    hazardType: 'abnormal_tide',
+    title: 'Unusually high tide at Kannur beach',
+    description: 'Tide is much higher than normal for this time. Sea wall is being overtopped. Local fishermen say this is unusual for the season.',
+    languageCode: 'en', isAnonymous: false, reporterName: 'Abdul Rahim', reporterPhone: '+91-96400-33333',
+    latitude: 11.8745, longitude: 75.3704, stateCode: 'KL', districtName: 'Kannur',
+    observedAt: hoursAgo(5), receivedAt: hoursAgo(4), severity: 'advisory', status: 'under_review',
+    confidenceScore: 58,
+    keywordsMatched: ['high tide', 'sea wall', 'overtopped', 'unusual'],
+  },
+  {
+    hazardType: 'person_in_danger',
+    title: 'Swimmer in difficulty at Thiruvananthapuram beach',
+    description: 'A young man is struggling in the water about 100 metres from shore near Vizhinjam. Locals are trying to reach him with a rope but current is very strong.',
+    languageCode: 'en', isAnonymous: false, reporterName: 'Suresh Nair', reporterPhone: '+91-95400-44444',
+    latitude: 8.3950, longitude: 76.9950, stateCode: 'KL', districtName: 'Thiruvananthapuram',
+    observedAt: minutesAgo(5), receivedAt: minutesAgo(4), severity: 'critical', status: 'verified',
+    confidenceScore: 93,
+    keywordsMatched: ['swimmer', 'struggling', 'rope', 'current', 'danger'],
+  },
+  {
+    hazardType: 'high_waves',
+    title: 'High waves at Kanyakumari Vivekananda Rock',
+    description: 'Waves are hitting the ferry jetty at Vivekananda Rock Memorial. Ferry services have been temporarily suspended. Waves estimated 3-4 metres.',
+    languageCode: 'en', isAnonymous: false, reporterName: 'Lakshmi Devi', reporterPhone: '+91-93400-55555',
+    latitude: 8.3783, longitude: 77.3400, stateCode: 'TN', districtName: 'Kanyakumari',
+    observedAt: hoursAgo(1), receivedAt: minutesAgo(50), severity: 'warning', status: 'verified',
+    confidenceScore: 79,
+    keywordsMatched: ['high waves', 'ferry', 'suspended', 'jetty'],
+  },
+  {
+    hazardType: 'coastal_flooding',
+    title: 'Sea water entering fields near Nellore coast',
+    description: 'Salt water is flooding into agricultural fields near Muttukuru village. Farmers are trying to build temporary bunds but water keeps coming.',
+    languageCode: 'en', isAnonymous: false, reporterName: 'Venkatesh Babu', reporterPhone: '+91-91400-66666',
+    latitude: 14.4300, longitude: 80.0100, stateCode: 'AP', districtName: 'Sri Potti Sriramulu Nellore',
+    observedAt: hoursAgo(6), receivedAt: hoursAgo(5), severity: 'warning', status: 'submitted',
+    confidenceScore: 72,
+    keywordsMatched: ['flooding', 'salt water', 'agricultural', 'bunds'],
+  },
+  {
+    hazardType: 'storm_surge',
+    title: 'Storm surge warning — Krishna delta region',
+    description: 'Storm surge of 1.5-2 metres expected in the Krishna delta region. Fisherfolk advised to secure boats and move inland. Wind picking up.',
+    languageCode: 'en', isAnonymous: false, reporterName: 'Krishna Murthy', reporterPhone: '+91-92400-77777',
+    latitude: 16.1700, longitude: 80.6200, stateCode: 'AP', districtName: 'Krishna',
+    observedAt: hoursAgo(4), receivedAt: hoursAgo(3), severity: 'critical', status: 'verified',
+    confidenceScore: 84,
+    keywordsMatched: ['storm surge', 'delta', 'secure boats', 'wind'],
+    reportType: 'analyst',
+  },
+  {
+    hazardType: 'other',
+    title: 'Strange foam accumulation at Udupi beach',
+    description: 'Large amount of white foam accumulating at Malpe beach near Udupi. Foam is 30cm thick in places. Unusual smell. Fishermen concerned about toxicity.',
+    languageCode: 'en', isAnonymous: true,
+    latitude: 13.3530, longitude: 74.7050, stateCode: 'KA', districtName: 'Udupi',
+    observedAt: hoursAgo(8), receivedAt: hoursAgo(7), severity: 'low', status: 'rejected',
+    confidenceScore: 35,
+    keywordsMatched: ['foam', 'beach', 'smell', 'toxicity'],
+  },
+  {
+    hazardType: 'high_waves',
+    title: 'High waves reported at Cuddalore coast',
+    description: 'Waves 2-3 metres high reported near Silver Beach. Fishing boats returning to harbour. No damage reported yet but sea is very rough.',
+    languageCode: 'en', isAnonymous: false, reporterName: 'Anbazhagan', reporterPhone: '+91-90400-88888',
+    latitude: 11.7480, longitude: 79.7565, stateCode: 'TN', districtName: 'Cuddalore',
+    observedAt: hoursAgo(2), receivedAt: hoursAgo(2), severity: 'advisory', status: 'under_review',
+    confidenceScore: 68,
+    keywordsMatched: ['high waves', 'fishing boats', 'harbour', 'rough'],
+  },
+  {
+    hazardType: 'person_in_danger',
+    title: 'Two fishermen missing near Ramanathapuram',
+    description: 'Two fishermen did not return from fishing trip near Rameswaram. Their boat was last seen near Pamban bridge at 5 AM. Search ongoing.',
+    languageCode: 'en', isAnonymous: false, reporterName: 'Pandian', reporterPhone: '+91-94400-99999',
+    latitude: 9.3677, longitude: 78.8386, stateCode: 'TN', districtName: 'Ramanathapuram',
+    observedAt: hoursAgo(10), receivedAt: hoursAgo(9), severity: 'critical', status: 'verified',
+    confidenceScore: 77,
+    keywordsMatched: ['missing', 'fishermen', 'boat', 'search', 'Pamban'],
+  },
+  {
+    hazardType: 'oil_spill',
+    title: 'Small oil sheen near Mangalore port',
+    description: 'Small oil sheen noticed near the New Mangalore Port breakwater. About 50 metres diameter. Port authorities notified.',
+    languageCode: 'en', isAnonymous: false, reporterName: 'Ganesh Nayak', reporterPhone: '+91-96400-10101',
+    latitude: 12.9100, longitude: 74.8300, stateCode: 'KA', districtName: 'Dakshina Kannada',
+    observedAt: hoursAgo(12), receivedAt: hoursAgo(11), severity: 'advisory', status: 'verified',
+    confidenceScore: 70,
+    keywordsMatched: ['oil sheen', 'port', 'breakwater', 'authorities'],
+  },
+  {
+    hazardType: 'coastal_erosion',
+    title: 'Severe erosion at Uttara Kannada coast',
+    description: 'Severe beach erosion near Karwar naval base area. Road to the lighthouse partially collapsed. Immediate engineering intervention needed.',
+    languageCode: 'en', isAnonymous: false, reporterName: 'Ravi Naik', reporterPhone: '+91-97400-20202',
+    latitude: 14.5676, longitude: 74.7139, stateCode: 'KA', districtName: 'Uttara Kannada',
+    observedAt: daysAgo(1), receivedAt: hoursAgo(20), severity: 'warning', status: 'under_review',
+    confidenceScore: 66,
+    keywordsMatched: ['erosion', 'road', 'collapsed', 'lighthouse', 'engineering'],
+  },
+  {
+    hazardType: 'high_waves',
+    title: 'Very rough seas near Thoothukudi port',
+    description: 'Rough seas near Thoothukudi fishing harbour. Waves 3 metres. All fishing boats advised to stay in harbour. Cargo operations continuing.',
+    languageCode: 'en', isAnonymous: true,
+    latitude: 8.7642, longitude: 78.1348, stateCode: 'TN', districtName: 'Thoothukudi',
+    observedAt: hoursAgo(3), receivedAt: hoursAgo(2), severity: 'warning', status: 'screening',
+    confidenceScore: 62,
+    keywordsMatched: ['rough seas', 'fishing harbour', 'cargo', '3 metres'],
+  },
+  {
+    hazardType: 'marine_pollution',
+    title: 'Chemical smell from sea water at Chennai',
+    description: 'Strong chemical smell from sea water near Chennai Besant Nagar beach. Water has slight greenish tint. Public advised not to enter water.',
+    languageCode: 'en', isAnonymous: false, reporterName: 'Meenakshi S', reporterPhone: '+91-91700-30303',
+    latitude: 13.0000, longitude: 80.2700, stateCode: 'TN', districtName: 'Chennai',
+    observedAt: hoursAgo(5), receivedAt: hoursAgo(4), severity: 'advisory', status: 'submitted',
+    confidenceScore: 55,
+    keywordsMatched: ['chemical', 'smell', 'greenish', 'water', 'advisory'],
+  },
+];
+
+export const mockReports: HazardReport[] = seedReports.map((seed, i) => {
+  const id = `RPT-${Date.now()}-${i}`;
+  return {
+    id,
+    clientReportId: generateClientReportId(),
+    trackingId: generateTrackingId(),
+    hazardType: seed.hazardType,
+    title: seed.title,
+    description: seed.description,
+    languageCode: seed.languageCode,
+    reportType: seed.reportType || 'citizen',
+    isAnonymous: seed.isAnonymous,
+    reporterName: seed.isAnonymous ? undefined : seed.reporterName,
+    reporterPhone: seed.isAnonymous ? undefined : seed.reporterPhone,
+    latitude: seed.latitude,
+    longitude: seed.longitude,
+    locationAccuracyMeters: 15,
+    locationSource: 'device_gps',
+    stateCode: seed.stateCode,
+    districtName: seed.districtName,
+    observedAt: seed.observedAt,
+    receivedAt: seed.receivedAt,
+    syncedAt: seed.receivedAt,
+    mediaUrls: [],
+    severity: seed.severity,
+    status: seed.status,
+    confidenceScore: seed.confidenceScore,
+    confidenceFactors: [
+      { name: 'Hazard keywords', score: Math.round(seed.confidenceScore * 0.3), weight: 30, rawValue: seed.keywordsMatched.join(', ') },
+      { name: 'Description clarity', score: Math.round(seed.confidenceScore * 0.2), weight: 20 },
+      { name: 'Location accuracy', score: 15, weight: 15 },
+      { name: 'Photo evidence', score: 0, weight: 15 },
+      { name: 'Reporter reliability', score: Math.round(seed.confidenceScore * 0.1), weight: 10 },
+      { name: 'Language consistency', score: 10, weight: 10 },
+    ],
+    analysisMode: 'simulated',
+    analysisExplanation: `Simulated confidence assessment for demonstration. Keywords matched: ${seed.keywordsMatched.join(', ')}.`,
+    keywordsMatched: seed.keywordsMatched,
+    isPublic: seed.status === 'verified' && seed.severity !== 'low',
+    isSynthetic: true,
+    verifiedBy: seed.status === 'verified' ? 'Demo Analyst' : undefined,
+    verifiedAt: seed.status === 'verified' ? seed.receivedAt : undefined,
+    socialPostIds: [],
+    createdAt: seed.receivedAt,
+    updatedAt: seed.receivedAt,
+  } as HazardReport;
+});
