@@ -1,15 +1,17 @@
 import fs from 'fs';
 import path from 'path';
 import { pool } from './pool';
+import type { PoolClient } from 'pg';
 
 const firstExistingDirectory = (candidates: string[]): string | null =>
   candidates.find((candidate) => fs.existsSync(candidate)) ?? null;
 
-const runSqlDirectory = async (
-  client: Awaited<ReturnType<typeof pool.connect>>,
+  const runSqlDirectory = async (
+  client: PoolClient,
   directory: string,
   trackingTable: 'schema_migrations' | 'schema_seeds',
-) => {
+  ): Promise<void> => {
+  
   if (!fs.existsSync(directory)) return;
   const files = fs.readdirSync(directory).filter((file) => file.endsWith('.sql')).sort();
 
