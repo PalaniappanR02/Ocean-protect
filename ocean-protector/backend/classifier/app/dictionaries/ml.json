@@ -1,0 +1,8 @@
+{
+  "hazard_keywords": {
+    "high_waves": ["വലിയ തിര", "കടല്‍ കോപം"],
+    "tsunami": ["സുനാമി"],
+    "coastal_flooding": ["വെള്ളപ്പൊക്കം", "കടല്‍ വെള്ളം"]
+  },
+  "urgency_keywords": ["രക്ഷാപ്രവർത്തനം", "അപകടം"]
+}

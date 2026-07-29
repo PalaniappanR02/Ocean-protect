@@ -1,0 +1,78 @@
+databases:
+  - name: oceanguard-db
+    plan: free
+    region: singapore
+    postgresMajorVersion: "15"
+    databaseName: oceanguard_db
+    user: oceanguard
+
+services:
+  - type: web
+    name: oceanguard-classifier
+    runtime: python
+    plan: free
+    region: singapore
+    rootDir: backend/classifier
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    autoDeployTrigger: commit
+
+  - type: web
+    name: oceanguard-api
+    runtime: node
+    plan: free
+    region: singapore
+    rootDir: backend
+    buildCommand: cd api && npm ci && npm run build
+    startCommand: cd api && npm run start:render
+    healthCheckPath: /health
+    autoDeployTrigger: commit
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: oceanguard-db
+          property: connectionString
+      - key: CLASSIFIER_SERVICE_URL
+        fromService:
+          type: web
+          name: oceanguard-classifier
+          property: hostport
+      - key: CORS_ORIGIN
+        fromService:
+          type: web
+          name: oceanguard-frontend
+          envVarKey: RENDER_EXTERNAL_URL
+      - key: ALLOW_RENDER_ORIGINS
+        value: "false"
+
+  - type: web
+    name: oceanguard-frontend
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm install --no-audit --no-fund && npm run build
+    staticPublishPath: ./dist
+    autoDeployTrigger: commit
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: oceanguard-api
+          envVarKey: RENDER_EXTERNAL_URL
+      - key: VITE_SOCKET_URL
+        fromService:
+          type: web
+          name: oceanguard-api
+          envVarKey: RENDER_EXTERNAL_URL
+      - key: VITE_DATA_MODE
+        value: api
+      - key: VITE_MAP_TILE_URL
+        value: https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png
+      - key: VITE_MAP_ATTRIBUTION
+        value: "&copy; OpenStreetMap &copy; CARTO"
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

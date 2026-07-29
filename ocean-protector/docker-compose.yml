@@ -1,0 +1,82 @@
+services:
+  db:
+    image: postgis/postgis:15-3.4
+    container_name: oceanguard-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: oceanguard
+      POSTGRES_PASSWORD: oceanguard_pass
+      POSTGRES_DB: oceanguard_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U oceanguard -d oceanguard_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  classifier:
+    build:
+      context: ./backend/classifier
+      dockerfile: Dockerfile
+    container_name: oceanguard-classifier
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/classifier:/app
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=3)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: api/Dockerfile
+    container_name: oceanguard-api
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    environment:
+      PORT: 4000
+      NODE_ENV: development
+      DATABASE_URL: postgresql://oceanguard:oceanguard_pass@db:5432/oceanguard_db
+      CLASSIFIER_SERVICE_URL: http://classifier:8000
+      CORS_ORIGIN: http://localhost:5173
+    depends_on:
+      db:
+        condition: service_healthy
+      classifier:
+        condition: service_healthy
+    volumes:
+      - ./backend/api:/app
+      - ./backend/database:/app/database:ro
+      - /app/node_modules
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:4000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://localhost:4000
+        VITE_SOCKET_URL: http://localhost:4000
+        VITE_DATA_MODE: api
+    container_name: oceanguard-frontend
+    restart: unless-stopped
+    ports:
+      - "5173:80"
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  pgdata:
