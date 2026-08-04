@@ -146,4 +146,3 @@ npm run typecheck
 npm run build
 ```
 
-See `PROJECT_AUDIT.md` for the repairs, integration changes, validation results, and remaining work.
