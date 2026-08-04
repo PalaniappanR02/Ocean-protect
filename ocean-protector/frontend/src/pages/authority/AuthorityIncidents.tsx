@@ -91,7 +91,7 @@ export function AuthorityIncidents() {
       ) : incidents && incidents.length > 0 ? (
         <div className="space-y-3">
           {incidents.map((incident) => (
-            <Card key={incident.id} className="hover:border-slate-600">
+            <Card key={incident.id} className="interactive-card">
               <CardContent className="p-4">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   {/* Left: Info */}

@@ -296,7 +296,12 @@ export const HAZARD_TYPE_LABELS: Record<HazardType, string> = {
   high_waves: 'High Waves', tsunami: 'Tsunami', coastal_flooding: 'Coastal Flooding', storm_surge: 'Storm Surge', oil_spill: 'Oil Spill', abnormal_tide: 'Abnormal Tide', marine_pollution: 'Marine Pollution', coastal_erosion: 'Coastal Erosion', damaged_vessel: 'Damaged Vessel', strong_current: 'Strong Current', person_in_danger: 'Person in Danger', other: 'Other Hazard',
 };
 export const SEVERITY_LABELS: Record<Severity, string> = { low: 'Low', advisory: 'Advisory', warning: 'Warning', critical: 'Critical' };
-export const SEVERITY_COLORS: Record<Severity, string> = { low: '#22c55e', advisory: '#eab308', warning: '#f97316', critical: '#ef4444' };
+export const SEVERITY_COLORS: Record<Severity, string> = {
+  low: 'var(--color-success)',
+  advisory: 'var(--color-warning)',
+  warning: 'var(--color-warning)',
+  critical: 'var(--color-danger)',
+};
 export const SEVERITY_ORDER: Severity[] = ['critical', 'warning', 'advisory', 'low'];
 export const REPORT_STATUS_LABELS: Record<ReportStatus, string> = { submitted: 'Submitted', screening: 'Screening', under_review: 'Under Review', verified: 'Verified', rejected: 'Rejected', duplicate: 'Duplicate', merged_into_incident: 'Merged into Incident', action_initiated: 'Action Initiated', resolved: 'Resolved' };
 export const INCIDENT_STATUS_LABELS: Record<IncidentStatus, string> = { candidate: 'Candidate', under_review: 'Under Review', verified: 'Verified', assigned: 'Assigned', responding: 'Responding', monitoring: 'Monitoring', resolved: 'Resolved', cancelled: 'Cancelled' };

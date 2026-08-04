@@ -13,7 +13,7 @@ const ToastViewport = React.forwardRef<
   <ToastPrimitives.Viewport
     ref={ref}
     className={cn(
-      'fixed top-0 z-[100] flex max-h-screen w-full flex-col-reverse p-4 sm:bottom-0 sm:right-0 sm:top-auto sm:flex-col md:max-w-[420px]',
+      'fixed top-0 z-50 flex max-h-screen w-full flex-col-reverse p-4 sm:bottom-0 sm:right-0 sm:top-auto sm:flex-col md:max-w-[420px]',
       className
     )}
     {...props}
@@ -22,13 +22,14 @@ const ToastViewport = React.forwardRef<
 ToastViewport.displayName = ToastPrimitives.Viewport.displayName;
 
 const toastVariants = cva(
-  'group pointer-events-auto relative flex w-full items-center justify-between space-x-4 overflow-hidden rounded-md border p-4 pr-8 shadow-lg transition-all data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-80 data-[state=closed]:slide-out-to-right-full data-[state=open]:slide-in-from-top-full data-[state=open]:slide-in-from-bottom-full',
+  'toast-surface group pointer-events-auto relative flex w-full items-center justify-between space-x-4 overflow-hidden p-4 pr-8 transition-[opacity,transform] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-80 data-[state=closed]:slide-out-to-right-full data-[state=open]:slide-in-from-top-full data-[state=open]:slide-in-from-bottom-full',
   {
     variants: {
       variant: {
-        default: 'border bg-background text-foreground',
-        destructive: 'destructive group border-destructive bg-destructive text-destructive-foreground',
-        success: 'border-green-500/30 bg-green-500/10 text-green-400',
+        default: '',
+        destructive: 'toast-danger destructive group',
+        success: 'toast-success',
+        warning: 'toast-warning',
       },
     },
     defaultVariants: { variant: 'default' },
@@ -65,7 +66,7 @@ const ToastClose = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <ToastPrimitives.Close
     ref={ref}
-    className={cn('absolute right-2 top-2 rounded-md p-1 text-foreground/50 opacity-0 transition-opacity hover:text-foreground focus:opacity-100 focus:outline-none group-hover:opacity-100', className)}
+    className={cn('absolute right-2 top-2 rounded-md p-1 text-foreground/70 transition-opacity hover:opacity-100 focus:opacity-100 focus:outline-none', className)}
     toast-close=""
     {...props}
   >

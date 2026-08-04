@@ -47,11 +47,11 @@ export function CitizenMap() {
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-4 text-xs">
-            <LegendItem color="#22c55e" label="Low Severity" />
-            <LegendItem color="#f59e0b" label="Advisory" />
-            <LegendItem color="#f97316" label="Warning" />
-            <LegendItem color="#ef4444" label="Critical" />
-            <LegendItem color="#0ea5e9" label="Coastal Region" outlined />
+            <LegendItem color="var(--color-success)" label="Low severity" />
+            <LegendItem color="var(--color-warning)" label="Advisory" />
+            <LegendItem color="var(--color-warning)" label="Warning" />
+            <LegendItem color="var(--color-danger)" label="Critical" />
+            <LegendItem color="var(--color-accent)" label="Coastal region" outlined />
           </div>
         </CardContent>
       </Card>

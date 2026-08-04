@@ -32,22 +32,24 @@ export function AuthorityAlert() {
 
   const publishAlertMutation = useMutation({
     mutationFn: async () => {
+      const currentIncident = incident;
+      if (!currentIncident) throw new Error('Incident is unavailable.');
       const safetyInstructions = instructions
         .split(/\n|\./)
         .map((item) => item.trim())
         .filter(Boolean);
 
       const alert = await alertService.create({
-        incidentId: incident.id,
-        incidentTitle: incident.title,
-        hazardType: incident.hazardType,
-        severity: incident.severity,
-        stateCode: incident.location.stateCode,
-        districtName: incident.location.districtName,
-        messageTitle: `${SEVERITY_LABELS[incident.severity]} ${HAZARD_TYPE_LABELS[incident.hazardType]} alert`,
+        incidentId: currentIncident.id,
+        incidentTitle: currentIncident.title,
+        hazardType: currentIncident.hazardType,
+        severity: currentIncident.severity,
+        stateCode: currentIncident.location.stateCode,
+        districtName: currentIncident.location.districtName,
+        messageTitle: `${SEVERITY_LABELS[currentIncident.severity]} ${HAZARD_TYPE_LABELS[currentIncident.hazardType]} alert`,
         messageBody: message.trim(),
         safetyInstructions,
-        affectedAreas: [incident.location.districtName],
+        affectedAreas: [currentIncident.location.districtName],
         channels: ['sms', 'push', 'web'],
         estimatedReach,
         expiresAt: new Date(Date.now() + 12 * 60 * 60 * 1000).toISOString(),

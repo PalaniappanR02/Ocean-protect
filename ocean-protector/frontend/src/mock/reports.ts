@@ -25,6 +25,7 @@ interface SeedReport {
   confidenceScore: number;
   keywordsMatched: string[];
   reportType?: 'citizen' | 'analyst';
+  mediaUrls?: HazardReport['mediaUrls'];
 }
 
 const seedReports: SeedReport[] = [
@@ -37,6 +38,13 @@ const seedReports: SeedReport[] = [
     observedAt: minutesAgo(8), receivedAt: minutesAgo(7), severity: 'warning', status: 'verified',
     confidenceScore: 86,
     keywordsMatched: ['high waves', 'marina', 'retaining wall', 'tourists', 'higher ground'],
+    mediaUrls: [{
+      url: '/mock-evidence/marina-wave-pattern.jpg',
+      filename: 'marina-wave-pattern.jpg',
+      contentType: 'image/jpeg',
+      size: 112150,
+      uploadedAt: minutesAgo(7),
+    }],
   },
   {
     hazardType: 'oil_spill',
@@ -97,6 +105,13 @@ const seedReports: SeedReport[] = [
     observedAt: hoursAgo(1), receivedAt: minutesAgo(55), severity: 'warning', status: 'verified',
     confidenceScore: 80,
     keywordsMatched: ['rip current', 'red flags', 'struggling', 'tourists'],
+    mediaUrls: [{
+      url: '/mock-evidence/rushikonda-rip-current.jpg',
+      filename: 'rushikonda-rip-current.jpg',
+      contentType: 'image/jpeg',
+      size: 102860,
+      uploadedAt: minutesAgo(55),
+    }],
   },
   {
     hazardType: 'marine_pollution',
@@ -107,6 +122,22 @@ const seedReports: SeedReport[] = [
     observedAt: hoursAgo(3), receivedAt: hoursAgo(2), severity: 'advisory', status: 'screening',
     confidenceScore: 65,
     keywordsMatched: ['plastic', 'debris', 'pollution', 'fishing nets'],
+    mediaUrls: [
+      {
+        url: '/mock-evidence/kozhikode-floating-debris.jpg',
+        filename: 'kozhikode-floating-debris.jpg',
+        contentType: 'image/jpeg',
+        size: 300640,
+        uploadedAt: hoursAgo(2),
+      },
+      {
+        url: '/mock-evidence/kozhikode-shoreline-waste.jpg',
+        filename: 'kozhikode-shoreline-waste.jpg',
+        contentType: 'image/jpeg',
+        size: 638968,
+        uploadedAt: hoursAgo(2),
+      },
+    ],
   },
   {
     hazardType: 'abnormal_tide',
@@ -229,6 +260,36 @@ const seedReports: SeedReport[] = [
     confidenceScore: 55,
     keywordsMatched: ['chemical', 'smell', 'greenish', 'water', 'advisory'],
   },
+  {
+    hazardType: 'coastal_erosion',
+    title: 'Protective dune breached near Tharangambadi',
+    description: 'A 25-metre section of the protective sand dune has been cut through by repeated wave action. The nearest homes are approximately 40 metres inland.',
+    languageCode: 'ta', isAnonymous: false, reporterName: 'M. Kavitha',
+    latitude: 11.0288, longitude: 79.8542, stateCode: 'TN', districtName: 'Mayiladuthurai',
+    observedAt: hoursAgo(6), receivedAt: hoursAgo(5), severity: 'warning', status: 'under_review',
+    confidenceScore: 77,
+    keywordsMatched: ['dune breach', 'wave action', 'homes', 'erosion'],
+  },
+  {
+    hazardType: 'abnormal_tide',
+    title: 'Backwater level rising at Bekal fishing inlet',
+    description: 'Fisher crews report the inlet water level is around 45 centimetres above the usual afternoon mark. No homes are affected, but small craft are being moved.',
+    languageCode: 'ml', isAnonymous: true,
+    latitude: 12.3921, longitude: 75.0330, stateCode: 'KL', districtName: 'Kasaragod',
+    observedAt: hoursAgo(2), receivedAt: hoursAgo(2), severity: 'advisory', status: 'screening',
+    confidenceScore: 61,
+    keywordsMatched: ['water level', 'inlet', 'small craft', 'above normal'],
+  },
+  {
+    hazardType: 'strong_current',
+    title: 'Cross-shore current reported at Kalingapatnam',
+    description: 'Lifeguards observed a strong southward current close to the bathing area. Warning boards are in place and visitors are being kept out of the water.',
+    languageCode: 'te', isAnonymous: false, reporterName: 'Coastal Watch Volunteer 14',
+    latitude: 18.3382, longitude: 84.1246, stateCode: 'AP', districtName: 'Srikakulam',
+    observedAt: minutesAgo(42), receivedAt: minutesAgo(38), severity: 'warning', status: 'verified',
+    confidenceScore: 83,
+    keywordsMatched: ['strong current', 'lifeguards', 'warning boards', 'bathing area'],
+  },
 ];
 
 export const mockReports: HazardReport[] = seedReports.map((seed, i) => {
@@ -254,7 +315,7 @@ export const mockReports: HazardReport[] = seedReports.map((seed, i) => {
     observedAt: seed.observedAt,
     receivedAt: seed.receivedAt,
     syncedAt: seed.receivedAt,
-    mediaUrls: [],
+    mediaUrls: seed.mediaUrls ?? [],
     severity: seed.severity,
     status: seed.status,
     confidenceScore: seed.confidenceScore,
@@ -262,12 +323,12 @@ export const mockReports: HazardReport[] = seedReports.map((seed, i) => {
       { name: 'Hazard keywords', score: Math.round(seed.confidenceScore * 0.3), weight: 30, rawValue: seed.keywordsMatched.join(', ') },
       { name: 'Description clarity', score: Math.round(seed.confidenceScore * 0.2), weight: 20 },
       { name: 'Location accuracy', score: 15, weight: 15 },
-      { name: 'Photo evidence', score: 0, weight: 15 },
+      { name: 'Photo evidence', score: seed.mediaUrls?.length ? 15 : 0, weight: 15, rawValue: seed.mediaUrls?.length ?? 0 },
       { name: 'Reporter reliability', score: Math.round(seed.confidenceScore * 0.1), weight: 10 },
       { name: 'Language consistency', score: 10, weight: 10 },
     ],
-    analysisMode: 'simulated',
-    analysisExplanation: `Simulated confidence assessment for demonstration. Keywords matched: ${seed.keywordsMatched.join(', ')}.`,
+    analysisMode: seed.mediaUrls?.length ? 'sample_dataset' : 'simulated',
+    analysisExplanation: `${seed.mediaUrls?.length ? 'Sample image evidence attached. ' : ''}Simulated confidence assessment for demonstration. Keywords matched: ${seed.keywordsMatched.join(', ')}.`,
     keywordsMatched: seed.keywordsMatched,
     isPublic: seed.status === 'verified' && seed.severity !== 'low',
     isSynthetic: true,

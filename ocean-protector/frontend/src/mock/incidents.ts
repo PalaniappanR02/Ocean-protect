@@ -185,7 +185,7 @@ export const mockIncidents: Incident[] = [
           stateCode: 'TN',
         },
         observedAt: mockReports[0].observedAt,
-        mediaUrls: [],
+        mediaUrls: mockReports[0].mediaUrls,
         confidenceScore: 86,
         status: 'verified',
       },

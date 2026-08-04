@@ -24,7 +24,7 @@ export function HazardMap({
   className = 'h-[600px]',
   onMarkerClick,
 }: HazardMapProps) {
-  const tileUrl = import.meta.env.VITE_MAP_TILE_URL || 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+  const tileUrl = import.meta.env.VITE_MAP_TILE_URL || 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
   const attribution = import.meta.env.VITE_MAP_ATTRIBUTION || '&copy; OpenStreetMap &copy; CARTO';
 
   const verifiedReports = useMemo(() => reports.filter((r) => r.status === 'verified' || r.status === 'under_review'), [reports]);
@@ -47,7 +47,7 @@ export function HazardMap({
             key={region.id}
             positions={bounds}
             pathOptions={{
-              color: '#0ea5e9',
+              color: 'var(--color-accent)',
               weight: 1,
               opacity: 0.3,
               fillOpacity: 0.03,
@@ -78,18 +78,18 @@ export function HazardMap({
           >
             <Popup>
               <div className="text-xs">
-                <div className="mb-1 font-semibold text-slate-100">{report.title}</div>
-                <div className="text-slate-400">
+                <div className="mb-1 font-semibold">{report.title}</div>
+                <div className="text-muted-foreground">
                   {HAZARD_TYPE_LABELS[report.hazardType]}
                 </div>
-                <div className="mt-1 text-slate-500">
+                <div className="mt-1 text-muted-foreground">
                   {report.districtName}, {report.stateCode}
                 </div>
-                <div className="text-slate-500">
+                <div className="text-muted-foreground">
                   {formatRelativeTime(report.observedAt)}
                 </div>
                 {report.confidenceScore !== undefined && (
-                  <div className="mt-1 text-slate-400">
+                  <div className="mt-1 text-muted-foreground">
                     Confidence: {report.confidenceScore}%
                   </div>
                 )}
@@ -122,15 +122,15 @@ export function HazardMap({
           >
             <Popup>
               <div className="text-xs">
-                <div className="mb-1 font-semibold text-slate-100">{incident.title}</div>
-                <div className="text-slate-400">{incident.incidentCode}</div>
-                <div className="mt-1 text-slate-500">
+                <div className="mb-1 font-semibold">{incident.title}</div>
+                <div className="text-muted-foreground">{incident.incidentCode}</div>
+                <div className="mt-1 text-muted-foreground">
                   {incident.location.districtName}, {incident.location.stateCode}
                 </div>
-                <div className="text-slate-500">
+                <div className="text-muted-foreground">
                   Status: {incident.status.replace(/_/g, ' ')}
                 </div>
-                <div className="text-slate-500">
+                <div className="text-muted-foreground">
                   Reports: {incident.reportCount}
                 </div>
                 {isResponding && (

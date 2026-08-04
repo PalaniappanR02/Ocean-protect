@@ -5,6 +5,7 @@ import { EmptyState } from '@/components/layout/EmptyState';
 import { alertService } from '@/services';
 import { Radio, ShieldCheck } from 'lucide-react';
 import { useState } from 'react';
+import { LoadingSkeleton } from '@/components/layout/LoadingSkeleton';
 
 export function CitizenAlerts() {
   const { data: alerts, isLoading } = useQuery({
@@ -20,11 +21,7 @@ export function CitizenAlerts() {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-ocean-500 border-t-transparent" />
-      </div>
-    );
+    return <LoadingSkeleton rows={3} label="Loading safety alerts" />;
   }
 
   return (

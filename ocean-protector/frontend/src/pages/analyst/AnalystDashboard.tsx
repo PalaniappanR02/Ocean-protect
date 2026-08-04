@@ -5,7 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ReportCard } from '@/components/features/ReportCard';
 import { IncidentCard } from '@/components/features/IncidentCard';
-import { reportService, incidentService, socialService } from '@/services';
+import { HazardMap } from '@/components/features/HazardMap';
+import { reportService, incidentService, socialService, regionService } from '@/services';
 import {
   Activity, FileWarning, CheckCircle, XCircle, AlertTriangle,
   Radio, Clock, TrendingUp,
@@ -37,6 +38,10 @@ export function AnalystDashboard() {
     queryKey: ['socialTrends'],
     queryFn: () => socialService.getTrends(),
   });
+  const { data: regions } = useQuery({
+    queryKey: ['regions'],
+    queryFn: () => regionService.list(),
+  });
 
   const severityData = stats?.bySeverity.map((s) => ({
     name: s.severity.charAt(0).toUpperCase() + s.severity.slice(1),
@@ -58,25 +63,39 @@ export function AnalystDashboard() {
       />
 
       {/* Stats */}
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-[1.2fr_1fr_1fr_1fr]">
         <StatCard label="Total Reports" value={stats?.total || 0} icon={FileWarning} color="ocean" />
         <StatCard label="Pending Review" value={stats?.underReview || 0} icon={Clock} color="amber" trend="Needs attention" />
         <StatCard label="Verified" value={stats?.verified || 0} icon={CheckCircle} color="green" />
         <StatCard label="Rejected" value={stats?.rejected || 0} icon={XCircle} color="red" />
       </div>
 
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatCard label="Active Incidents" value={recentIncidents?.length || 0} icon={AlertTriangle} color="orange" />
         <StatCard label="Critical Incidents" value={recentIncidents?.filter((i) => i.severity === 'critical').length || 0} icon={AlertTriangle} color="red" />
         <StatCard label="Social Signals" value={socialTrends?.totalSignals || 0} icon={Radio} color="ocean" />
         <StatCard label="High Urgency Signals" value={socialTrends?.highUrgency || 0} icon={Radio} color="red" />
       </div>
 
-      {/* Charts */}
+      <div className="mb-6 grid gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(340px,1fr)]">
+        <Card className="overflow-hidden">
+          <CardHeader><CardTitle>Live evidence map</CardTitle></CardHeader>
+          <CardContent className="p-0"><HazardMap reports={pendingReports?.items} incidents={recentIncidents} regions={regions} className="h-[520px]" /></CardContent>
+        </Card>
+        <Card>
+          <CardHeader><CardTitle>Verification queue · {pendingReports?.total || 0} reports</CardTitle></CardHeader>
+          <CardContent className="space-y-3">
+            {pendingReports?.items.slice(0, 4).map((report) => <ReportCard key={report.id} report={report} />)}
+            {!pendingReports?.items.length && <p className="py-8 text-center text-sm text-muted-foreground">No reports awaiting review</p>}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Decision-support charts */}
       <div className="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Reports by Severity</CardTitle>
+            <CardTitle>Where verification attention is concentrated</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={250}>
@@ -86,7 +105,7 @@ export function AnalystDashboard() {
                     <Cell key={i} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip contentStyle={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '8px' }} />
+                <Tooltip contentStyle={{ background: 'var(--color-paper-3)', border: '1px solid var(--color-rule)', borderRadius: 'var(--radius-control)' }} />
               </PieChart>
             </ResponsiveContainer>
           </CardContent>
@@ -94,16 +113,16 @@ export function AnalystDashboard() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Reports by Hazard Type</CardTitle>
+            <CardTitle>Incoming evidence by hazard type</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={250}>
               <BarChart data={hazardTypeData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-                <XAxis dataKey="name" tick={{ fill: '#94a3b8', fontSize: 11 }} angle={-45} textAnchor="end" height={60} />
-                <YAxis tick={{ fill: '#94a3b8' }} />
-                <Tooltip contentStyle={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '8px' }} />
-                <Bar dataKey="count" fill="#0ea5e9" radius={[4, 4, 0, 0]} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-rule)" />
+                <XAxis dataKey="name" tick={{ fill: 'var(--color-neutral)', fontSize: 11 }} angle={-45} textAnchor="end" height={60} />
+                <YAxis tick={{ fill: 'var(--color-neutral)' }} />
+                <Tooltip contentStyle={{ background: 'var(--color-paper-3)', border: '1px solid var(--color-rule)', borderRadius: 'var(--radius-control)' }} />
+                <Bar dataKey="count" fill="var(--color-accent)" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>

@@ -56,7 +56,7 @@ export function AuthorityDashboard() {
       />
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-[1.35fr_1fr_1fr_1fr]">
         <StatCard
           label="Pending Reports"
           value={stats?.underReview ?? 0}
@@ -90,7 +90,7 @@ export function AuthorityDashboard() {
         {/* Severity Distribution */}
         <Card>
           <CardHeader>
-            <CardTitle>Reports by Severity</CardTitle>
+            <CardTitle>Current incident severity</CardTitle>
           </CardHeader>
           <CardContent>
             {severityData.length > 0 ? (
@@ -111,8 +111,8 @@ export function AuthorityDashboard() {
                   </Pie>
                   <Tooltip
                     contentStyle={{
-                      background: '#0f172a',
-                      border: '1px solid #1e293b',
+                      background: 'var(--color-paper-3)',
+                      border: '1px solid var(--color-rule)',
                       borderRadius: '8px',
                     }}
                   />
@@ -129,29 +129,29 @@ export function AuthorityDashboard() {
         {/* Hazard Types */}
         <Card>
           <CardHeader>
-            <CardTitle>Reports by Hazard Type</CardTitle>
+            <CardTitle>Response demand by hazard type</CardTitle>
           </CardHeader>
           <CardContent>
             {hazardTypeData.length > 0 ? (
               <ResponsiveContainer width="100%" height={250}>
                 <BarChart data={hazardTypeData} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-                  <XAxis type="number" stroke="#64748b" fontSize={12} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--color-rule)" />
+                  <XAxis type="number" stroke="var(--color-muted)" fontSize={12} />
                   <YAxis
                     type="category"
                     dataKey="name"
-                    stroke="#64748b"
+                    stroke="var(--color-muted)"
                     fontSize={11}
                     width={100}
                   />
                   <Tooltip
                     contentStyle={{
-                      background: '#0f172a',
-                      border: '1px solid #1e293b',
+                      background: 'var(--color-paper-3)',
+                      border: '1px solid var(--color-rule)',
                       borderRadius: '8px',
                     }}
                   />
-                  <Bar dataKey="count" fill="#0891b2" radius={[0, 4, 4, 0]} />
+                  <Bar dataKey="count" fill="var(--color-accent)" radius={[0, 4, 4, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
@@ -167,7 +167,10 @@ export function AuthorityDashboard() {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Active Incidents</CardTitle>
+            <div>
+              <CardTitle>Incidents requiring action</CardTitle>
+              <p className="mt-2 text-sm text-muted-foreground">Review severity and response status separately before deployment.</p>
+            </div>
             <Button variant="outline" size="sm" asChild>
               <Link to="/authority/incidents">
                 View All
@@ -181,7 +184,7 @@ export function AuthorityDashboard() {
             recentIncidents.map((incident) => (
               <div
                 key={incident.id}
-                className="flex items-center gap-3 rounded-lg border border-slate-800 p-3"
+                className={`flex items-center gap-3 rounded-lg border p-3 ${incident.severity === 'critical' ? 'border-red-300 bg-red-50' : 'border-border bg-card'}`}
               >
                 <div
                   className="h-10 w-10 shrink-0 rounded-full flex items-center justify-center"
@@ -196,10 +199,10 @@ export function AuthorityDashboard() {
                   />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-slate-100">
+                  <p className="truncate text-sm font-medium">
                     {incident.title}
                   </p>
-                  <p className="truncate text-xs text-slate-400">
+                  <p className="truncate text-xs text-muted-foreground">
                     {incident.location.districtName}, {incident.location.stateCode} ·
                     {' '}{formatRelativeTime(incident.createdAt)}
                   </p>

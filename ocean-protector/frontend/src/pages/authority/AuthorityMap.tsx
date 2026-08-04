@@ -133,7 +133,7 @@ export function AuthorityMap() {
                 <Link
                   key={incident.id}
                   to={`/authority/incidents/${incident.id}`}
-                  className="flex items-center gap-3 rounded-lg border border-slate-800 p-2 hover:border-slate-600 hover:bg-slate-800/50"
+                  className="interactive-card flex items-center gap-3 rounded-lg border border-border bg-card p-2"
                 >
                   <div
                     className="h-2 w-2 shrink-0 rounded-full"

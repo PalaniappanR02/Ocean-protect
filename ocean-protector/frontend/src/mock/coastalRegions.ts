@@ -124,6 +124,27 @@ export const coastalRegions: CoastalRegion[] = [
     referencePoint: { latitude: 16.1700, longitude: 80.6200 }, isActive: true,
     createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z',
   },
+  {
+    id: 'cr-tn-myd', stateCode: 'TN', stateName: 'Tamil Nadu', districtName: 'Mayiladuthurai',
+    coastalPriority: 2, primaryLanguageCode: 'ta', secondaryLanguageCodes: ['en'],
+    boundingBox: { minLat: 10.98, maxLat: 11.35, minLon: 79.48, maxLon: 79.92 },
+    referencePoint: { latitude: 11.1037, longitude: 79.6497 }, isActive: true,
+    createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z',
+  },
+  {
+    id: 'cr-kl-ksd', stateCode: 'KL', stateName: 'Kerala', districtName: 'Kasaragod',
+    coastalPriority: 2, primaryLanguageCode: 'ml', secondaryLanguageCodes: ['en'],
+    boundingBox: { minLat: 12.18, maxLat: 12.78, minLon: 74.82, maxLon: 75.35 },
+    referencePoint: { latitude: 12.4996, longitude: 74.9867 }, isActive: true,
+    createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z',
+  },
+  {
+    id: 'cr-ap-skl', stateCode: 'AP', stateName: 'Andhra Pradesh', districtName: 'Srikakulam',
+    coastalPriority: 2, primaryLanguageCode: 'te', secondaryLanguageCodes: ['en'],
+    boundingBox: { minLat: 18.05, maxLat: 19.12, minLon: 83.42, maxLon: 84.60 },
+    referencePoint: { latitude: 18.2969, longitude: 83.8993 }, isActive: true,
+    createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z',
+  },
 ];
 
 export function getCoastalRegionByLocation(lat: number, lon: number): CoastalRegion | undefined {

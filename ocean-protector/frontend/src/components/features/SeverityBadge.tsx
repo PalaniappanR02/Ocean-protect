@@ -9,10 +9,10 @@ interface SeverityBadgeProps {
 }
 
 const severityConfig: Record<Severity, { class: string; dot: string }> = {
-  low: { class: 'severity-low', dot: 'bg-green-500' },
-  advisory: { class: 'severity-advisory', dot: 'bg-amber-500' },
-  warning: { class: 'severity-warning', dot: 'bg-orange-500' },
-  critical: { class: 'severity-critical', dot: 'bg-red-500' },
+  low: { class: 'border-green-200 bg-green-50 text-green-800', dot: 'bg-green-700' },
+  advisory: { class: 'border-yellow-200 bg-yellow-50 text-yellow-800', dot: 'bg-yellow-600' },
+  warning: { class: 'border-orange-200 bg-orange-50 text-orange-800', dot: 'bg-orange-600' },
+  critical: { class: 'border-red-300 bg-red-50 font-bold text-red-800', dot: 'bg-red-700' },
 };
 
 export function SeverityBadge({ severity, size = 'sm', showIcon = true }: SeverityBadgeProps) {
@@ -29,7 +29,7 @@ export function SeverityBadge({ severity, size = 'sm', showIcon = true }: Severi
       config.class,
       sizeClass,
     )}>
-      {showIcon && <span className={cn('h-1.5 w-1.5 rounded-full', config.dot)} />}
+      {showIcon && <span className={cn('h-2 w-2 rounded-full', config.dot)} aria-hidden="true" />}
       {SEVERITY_LABELS[severity]}
     </span>
   );
