@@ -2,6 +2,8 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { StatCard } from '@/components/features/StatCard';
+import { DashboardCard } from '@/components/dashboard/DashboardCard';
+import { DashboardSection } from '@/components/dashboard/DashboardSection';
 import { PublicAlertCard } from '@/components/features/PublicAlertCard';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -119,14 +121,14 @@ export function CitizenDashboard() {
         </section>
       )}
 
-      <section className="mb-8" aria-label="Current coastal activity">
-        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-          <StatCard label="Active alerts" value={activeAlerts.length} icon={Radio} color="red" />
-          <StatCard label="Active incidents" value={publicIncidents.length} icon={Activity} color="amber" />
-          <StatCard label="Reports today" value={stats?.last24Hours || 0} icon={FileWarning} color="ocean" />
-          <StatCard label="Saved offline" value={pendingCount} icon={WifiOff} color="amber" />
+      <DashboardSection title="Current coastal activity" description="At-a-glance metrics and quick actions">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <DashboardCard label="Active alerts" value={activeAlerts.length} subtitle="Active safety warnings" trend="+2%" progress={Math.min(100, activeAlerts.length * 5)} Icon={Radio} />
+          <DashboardCard label="Active incidents" value={publicIncidents.length} subtitle="Verified nearby incidents" trend="-1%" progress={Math.min(100, publicIncidents.length * 8)} Icon={Activity} />
+          <DashboardCard label="Reports today" value={stats?.last24Hours || 0} subtitle="Citizen reports in last 24h" trend="+8%" progress={Math.min(100, (stats?.last24Hours || 0) * 4)} Icon={FileWarning} />
+          <DashboardCard label="Saved offline" value={pendingCount} subtitle="Pending sync" trend={syncing ? 'Syncing…' : undefined} progress={Math.min(100, pendingCount * 10)} Icon={WifiOff} />
         </div>
-      </section>
+      </DashboardSection>
 
       <section className="mb-8" aria-labelledby="citizen-tools-heading">
         <h2 id="citizen-tools-heading" className="mb-3 text-lg font-semibold">What you can do next</h2>

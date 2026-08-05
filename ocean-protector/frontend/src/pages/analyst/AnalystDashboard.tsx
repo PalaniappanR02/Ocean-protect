@@ -1,6 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { StatCard } from '@/components/features/StatCard';
+import { DashboardCard } from '@/components/dashboard/DashboardCard';
+import { DashboardSection } from '@/components/dashboard/DashboardSection';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ReportCard } from '@/components/features/ReportCard';
@@ -63,19 +65,23 @@ export function AnalystDashboard() {
       />
 
       {/* Stats */}
-      <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-[1.2fr_1fr_1fr_1fr]">
-        <StatCard label="Total Reports" value={stats?.total || 0} icon={FileWarning} color="ocean" />
-        <StatCard label="Pending Review" value={stats?.underReview || 0} icon={Clock} color="amber" trend="Needs attention" />
-        <StatCard label="Verified" value={stats?.verified || 0} icon={CheckCircle} color="green" />
-        <StatCard label="Rejected" value={stats?.rejected || 0} icon={XCircle} color="red" />
-      </div>
+      <DashboardSection title="Overview" description="Key metrics for verification and response">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <DashboardCard label="Total Reports" value={stats?.total || 0} subtitle="All-time" trend="+4%" progress={stats?.total ? Math.min(100, (stats.total / 1000) * 100) : 0} Icon={FileWarning} />
+          <DashboardCard label="Pending Review" value={stats?.underReview || 0} subtitle="Needs verification" trend="Needs attention" progress={stats?.underReview ? Math.min(100, stats.underReview * 5) : 0} Icon={Clock} />
+          <DashboardCard label="Verified" value={stats?.verified || 0} subtitle="Confirmed reports" trend="Stable" progress={stats?.verified ? Math.min(100, (stats.verified / Math.max(1, stats.total || 1)) * 100) : 0} Icon={CheckCircle} />
+          <DashboardCard label="Rejected" value={stats?.rejected || 0} subtitle="False or duplicates" trend="-2%" progress={stats?.rejected ? Math.min(100, stats.rejected * 5) : 0} Icon={XCircle} />
+        </div>
+      </DashboardSection>
 
-      <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatCard label="Active Incidents" value={recentIncidents?.length || 0} icon={AlertTriangle} color="orange" />
-        <StatCard label="Critical Incidents" value={recentIncidents?.filter((i) => i.severity === 'critical').length || 0} icon={AlertTriangle} color="red" />
-        <StatCard label="Social Signals" value={socialTrends?.totalSignals || 0} icon={Radio} color="ocean" />
-        <StatCard label="High Urgency Signals" value={socialTrends?.highUrgency || 0} icon={Radio} color="red" />
-      </div>
+      <DashboardSection title="Live signals & incidents" description="Active incident and social signal overview">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <DashboardCard label="Active Incidents" value={recentIncidents?.length || 0} subtitle="Verified / responding" progress={recentIncidents?.length ? Math.min(100, recentIncidents.length * 8) : 0} Icon={AlertTriangle} />
+          <DashboardCard label="Critical Incidents" value={recentIncidents?.filter((i) => i.severity === 'critical').length || 0} subtitle="Immediate attention" progress={recentIncidents?.filter((i) => i.severity === 'critical').length ? 100 : 0} Icon={AlertTriangle} />
+          <DashboardCard label="Social Signals" value={socialTrends?.totalSignals || 0} subtitle="Trends in social data" progress={socialTrends?.totalSignals ? Math.min(100, socialTrends.totalSignals / 10) : 0} Icon={Radio} />
+          <DashboardCard label="High Urgency Signals" value={socialTrends?.highUrgency || 0} subtitle="Priority signals" progress={socialTrends?.highUrgency ? Math.min(100, socialTrends.highUrgency * 10) : 0} Icon={Radio} />
+        </div>
+      </DashboardSection>
 
       <div className="mb-6 grid gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(340px,1fr)]">
         <Card className="overflow-hidden">

@@ -1,6 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { StatCard } from '@/components/features/StatCard';
+import { DashboardCard } from '@/components/dashboard/DashboardCard';
+import { DashboardSection } from '@/components/dashboard/DashboardSection';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -55,35 +57,14 @@ export function AuthorityDashboard() {
         icon={Shield}
       />
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-[1.35fr_1fr_1fr_1fr]">
-        <StatCard
-          label="Pending Reports"
-          value={stats?.underReview ?? 0}
-          icon={Clock}
-          color="amber"
-          trend="Needs attention"
-        />
-        <StatCard
-          label="Active Incidents"
-          value={recentIncidents.length}
-          icon={AlertTriangle}
-          color="orange"
-          trend="Live incidents"
-        />
-        <StatCard
-          label="Critical Incidents"
-          value={incidents?.filter((i) => i.severity === 'critical').length ?? 0}
-          icon={XCircle}
-          color="red"
-        />
-        <StatCard
-          label="Teams Deployed"
-          value={incidents?.filter((i) => i.responseTeams?.some(t => t.status === 'deployed')).length ?? 0}
-          icon={Users}
-          color="blue"
-        />
-      </div>
+      <DashboardSection title="Operations overview" description="Response and incident metrics">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <DashboardCard label="Pending Reports" value={stats?.underReview ?? 0} subtitle="Requires dispatch" trend="Needs attention" progress={stats?.underReview ? Math.min(100, stats.underReview * 5) : 0} Icon={Clock} />
+          <DashboardCard label="Active Incidents" value={recentIncidents.length} subtitle="Assigned / responding" progress={Math.min(100, recentIncidents.length * 8)} Icon={AlertTriangle} />
+          <DashboardCard label="Critical Incidents" value={incidents?.filter((i) => i.severity === 'critical').length ?? 0} subtitle="Immediate response" progress={incidents?.filter((i) => i.severity === 'critical').length ? 100 : 0} Icon={XCircle} />
+          <DashboardCard label="Teams Deployed" value={incidents?.filter((i) => i.responseTeams?.some(t => t.status === 'deployed')).length ?? 0} subtitle="Active teams" progress={Math.min(100, (incidents?.length || 0) * 10)} Icon={Users} />
+        </div>
+      </DashboardSection>
 
       {/* Charts Row */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
