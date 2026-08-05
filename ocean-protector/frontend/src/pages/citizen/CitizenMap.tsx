@@ -35,7 +35,7 @@ export function CitizenMap() {
             reports={reports?.items || []}
             incidents={incidents || []}
             regions={regions || []}
-            className="h-[700px] rounded-lg"
+            className="h-[60vh] md:h-[75vh] lg:h-[calc(100dvh-12rem)] rounded-lg"
           />
         </CardContent>
       </Card>

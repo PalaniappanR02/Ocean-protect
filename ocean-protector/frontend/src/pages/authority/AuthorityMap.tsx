@@ -83,7 +83,7 @@ export function AuthorityMap() {
             reports={mapReports}
             incidents={mapIncidents}
             regions={regions || []}
-            className="h-[600px] rounded-lg"
+            className="h-[60vh] md:h-[75vh] lg:h-[calc(100dvh-12rem)] rounded-lg"
           />
         </CardContent>
       </Card>
