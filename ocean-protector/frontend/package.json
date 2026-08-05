@@ -11,11 +11,13 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
+    "@iconify/react": "^6.0.2",
     "@radix-ui/react-dialog": "^1.1.2",
     "@radix-ui/react-dropdown-menu": "^2.1.2",
     "@radix-ui/react-label": "^2.1.0",
     "@radix-ui/react-progress": "^1.1.0",
     "@radix-ui/react-scroll-area": "^1.2.0",
+    "@radix-ui/react-select": "^2.1.4",
     "@radix-ui/react-separator": "^1.1.0",
     "@radix-ui/react-slot": "^1.1.0",
     "@radix-ui/react-switch": "^1.1.1",
@@ -27,18 +29,26 @@
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "dexie": "^4.0.10",
+    "framer-motion": "^13.0.0",
     "leaflet": "^1.9.4",
+    "lottie-react": "^2.4.1",
     "lucide-react": "^0.468.0",
+    "polished": "^4.3.1",
     "react": "^18.3.1",
+    "react-countup": "^6.5.3",
     "react-dom": "^18.3.1",
+    "react-gauge-component": "^2.0.29",
     "react-hook-form": "^7.54.0",
+    "react-hotkeys-hook": "^5.3.3",
+    "react-intersection-observer": "^11.0.0",
     "react-leaflet": "^4.2.1",
     "react-router-dom": "^6.28.0",
+    "react-simple-maps": "^3.0.0",
+    "react-use": "^17.6.1",
     "recharts": "^2.13.3",
     "socket.io-client": "^4.8.1",
     "tailwind-merge": "^2.5.5",
-    "zod": "^3.23.8",
-    "@radix-ui/react-select": "^2.1.4"
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@types/leaflet": "^1.9.14",
@@ -51,7 +61,7 @@
     "tailwindcss": "^3.4.16",
     "tailwindcss-animate": "^1.0.7",
     "typescript": "^5.7.2",
-    "vite": "^5.4.11"
+    "vite": "^8.2.0"
   },
   "engines": {
     "node": ">=20 <23"
