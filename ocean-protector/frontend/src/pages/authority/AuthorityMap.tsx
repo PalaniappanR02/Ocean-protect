@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { HazardMap } from '@/components/features/HazardMap';
+import MapShell from '@/components/map/MapShell';
 import { incidentService, reportService, regionService } from '@/services';
 import type { Incident, HazardReport } from '@/types';
 import { SEVERITY_COLORS } from '@/types';
@@ -79,7 +79,7 @@ export function AuthorityMap() {
       {/* Map */}
       <Card>
         <CardContent className="p-0">
-          <HazardMap
+          <MapShell
             reports={mapReports}
             incidents={mapIncidents}
             regions={regions || []}
