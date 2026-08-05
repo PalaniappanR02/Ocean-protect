@@ -3,6 +3,13 @@ import { PageHeader } from '@/components/layout/PageHeader';
 import { StatCard } from '@/components/features/StatCard';
 import { DashboardCard } from '@/components/dashboard/DashboardCard';
 import { DashboardSection } from '@/components/dashboard/DashboardSection';
+import { AnalystHero } from '@/components/dashboard/AnalystHero';
+import { VerificationQueue } from '@/components/dashboard/VerificationQueue';
+import { ConfidenceGauge } from '@/components/dashboard/ConfidenceGauge';
+import { HeatmapPreview } from '@/components/dashboard/HeatmapPreview';
+import { IncidentTimeline } from '@/components/dashboard/IncidentTimeline';
+import { QuickActionCard } from '@/components/dashboard/QuickActionCard';
+import { RecentActivity } from '@/components/dashboard/RecentActivity';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ReportCard } from '@/components/features/ReportCard';
@@ -58,11 +65,7 @@ export function AnalystDashboard() {
 
   return (
     <div className="animate-fade-in">
-      <PageHeader
-        title="Analyst Dashboard"
-        description="Review and verify citizen hazard reports, manage incidents, and coordinate response"
-        icon={Activity}
-      />
+      <AnalystHero totalIncidents={recentIncidents?.length || 0} verificationQueue={pendingReports?.total || 0} />
 
       {/* Stats */}
       <DashboardSection title="Overview" description="Key metrics for verification and response">
@@ -83,18 +86,32 @@ export function AnalystDashboard() {
         </div>
       </DashboardSection>
 
-      <div className="mb-6 grid gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(340px,1fr)]">
-        <Card className="overflow-hidden">
-          <CardHeader><CardTitle>Live evidence map</CardTitle></CardHeader>
-          <CardContent className="p-0"><HazardMap reports={pendingReports?.items} incidents={recentIncidents} regions={regions} className="h-[520px]" /></CardContent>
-        </Card>
-        <Card>
-          <CardHeader><CardTitle>Verification queue · {pendingReports?.total || 0} reports</CardTitle></CardHeader>
-          <CardContent className="space-y-3">
-            {pendingReports?.items.slice(0, 4).map((report) => <ReportCard key={report.id} report={report} />)}
-            {!pendingReports?.items.length && <p className="py-8 text-center text-sm text-muted-foreground">No reports awaiting review</p>}
-          </CardContent>
-        </Card>
+      <div className="mb-6 grid gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(360px,1fr)]">
+        <div>
+          <HeatmapPreview reports={pendingReports?.items} incidents={recentIncidents} regions={regions} />
+
+          <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <QuickActionCard Icon={FileWarning} label="Verify reports" description="Open verification workflow" onActivate={() => window.location.assign('/analyst/reports')} />
+            <QuickActionCard Icon={Activity} label="Open Map" description="Full map view" onActivate={() => window.location.assign('/analyst/map')} />
+            <QuickActionCard Icon={TrendingUp} label="Generate Alert" description="Trigger a public alert" onActivate={() => window.location.assign('/analyst/alerts/new')} />
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          <div className="rounded-lg bg-gradient-to-br from-white/3 to-white/2 p-4 shadow-sm backdrop-blur-sm">
+            <h3 className="text-sm font-semibold">Verification queue · {pendingReports?.total || 0} reports</h3>
+            <div className="mt-3">
+              <VerificationQueue reports={pendingReports} />
+            </div>
+          </div>
+
+          <div className="rounded-lg bg-gradient-to-br from-white/3 to-white/2 p-4 shadow-sm backdrop-blur-sm">
+            <h3 className="text-sm font-semibold">Activity feed</h3>
+            <div className="mt-3">
+              <RecentActivity activities={(socialTrends as any)?.activities || []} />
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Decision-support charts */}
