@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { /* useState removed - declared later with useMemo */ } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Card, CardContent } from '@/components/ui/card';
@@ -11,7 +11,9 @@ import { incidentService } from '@/services';
 import { INCIDENT_STATUS_LABELS, INCIDENT_STATUS_OPTIONS, HAZARD_TYPE_LABELS } from '@/types';
 import type { IncidentStatus } from '@/types';
 import { Link } from 'react-router-dom';
-import { Search, Filter, AlertTriangle, MapPin, Clock, Users, Activity } from 'lucide-react';
+import { Search, Filter, AlertTriangle, MapPin, Clock, Users, Activity, CheckCircle } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import SearchFilters from '@/components/list/SearchFilters';
 import { formatRelativeTime, formatDateTime } from '@/lib/utils';
 
 const STATUS_FILTERS: { value: IncidentStatus | 'all'; label: string; icon: any }[] = [
@@ -21,8 +23,6 @@ const STATUS_FILTERS: { value: IncidentStatus | 'all'; label: string; icon: any 
   { value: 'monitoring', label: 'Monitoring', icon: Clock },
   { value: 'resolved', label: 'Resolved', icon: CheckCircle },
 ];
-
-import { CheckCircle } from 'lucide-react';
 
 export function AuthorityIncidents() {
   const [search, setSearch] = useState('');
@@ -41,6 +41,15 @@ export function AuthorityIncidents() {
       }),
   });
 
+  const [searchLocal, setSearchLocal] = useState('');
+
+  const visibleIncidents = useMemo(() => {
+    if (!incidents) return [];
+    const q = searchLocal.trim().toLowerCase();
+    if (!q) return incidents;
+    return incidents.filter(i => (i.title||'').toLowerCase().includes(q) || (i.location?.districtName||'').toLowerCase().includes(q) || (i.description||'').toLowerCase().includes(q));
+  }, [incidents, searchLocal]);
+
   return (
     <div className="animate-fade-in space-y-6">
       <PageHeader
@@ -51,15 +60,7 @@ export function AuthorityIncidents() {
 
       {/* Filters */}
       <div className="space-y-4">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-          <Input
-            placeholder="Search incidents by title, district, or state..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-10"
-          />
-        </div>
+        <SearchFilters value={searchLocal} onChange={setSearchLocal} onClear={()=>setSearchLocal('')} placeholder="Search incidents by title, district, or state..." />
 
         {/* Status filter chips */}
         <div className="flex flex-wrap gap-2">
@@ -88,10 +89,10 @@ export function AuthorityIncidents() {
             <div key={i} className="h-24 animate-pulse rounded-lg bg-slate-800/50" />
           ))}
         </div>
-      ) : incidents && incidents.length > 0 ? (
+      ) : visibleIncidents && visibleIncidents.length > 0 ? (
         <div className="space-y-3">
-          {incidents.map((incident) => (
-            <Card key={incident.id} className="interactive-card">
+          {visibleIncidents.map((incident) => (
+            <Card key={incident.id} className="interactive-card glass-panel">
               <CardContent className="p-4">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   {/* Left: Info */}

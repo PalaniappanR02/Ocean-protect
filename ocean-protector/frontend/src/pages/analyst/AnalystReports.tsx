@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { reportService } from '@/services';
 import { EmptyState } from '@/components/layout/EmptyState';
 import { FileWarning, Search, Filter, X } from 'lucide-react';
+import SearchFilters from '@/components/list/SearchFilters';
 import type { ReportStatus, HazardType, Severity } from '@/types';
 import { REPORT_STATUS_LABELS, HAZARD_TYPE_LABELS, SEVERITY_LABELS, SEVERITY_ORDER } from '@/types';
 
@@ -70,20 +71,9 @@ export function AnalystReports() {
         <CardContent className="p-4">
           <div className="flex flex-col gap-4">
             <div className="flex gap-2">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  placeholder="Search by title, description, tracking ID, or district..."
-                  value={search}
-                  onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                  className="pl-9"
-                />
+              <div className="flex-1">
+                <SearchFilters value={search} onChange={(v)=>{ setSearch(v); setPage(1); }} onClear={clearFilters} placeholder="Search by title, tracking ID or district..." />
               </div>
-              {hasFilters && (
-                <Button variant="outline" onClick={clearFilters}>
-                  <X className="mr-2 h-4 w-4" /> Clear
-                </Button>
-              )}
             </div>
 
             {/* Status Filters */}
@@ -135,7 +125,9 @@ export function AnalystReports() {
           </div>
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
             {data.items.map((report) => (
-              <ReportCard key={report.id} report={report} />
+              <div key={report.id} className="glass-panel p-3">
+                <ReportCard report={report} />
+              </div>
             ))}
           </div>
           {data.totalPages > 1 && (
