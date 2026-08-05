@@ -29,7 +29,7 @@
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "dexie": "^4.0.10",
-    "framer-motion": "^13.0.0",
+    "framer-motion": "^10.12.16",
     "leaflet": "^1.9.4",
     "lottie-react": "^2.4.1",
     "lucide-react": "^0.468.0",
