@@ -123,12 +123,18 @@ export function AnalystDashboard() {
           <CardContent>
             <ResponsiveContainer width="100%" height={250}>
               <PieChart>
+                <defs>
+                  <linearGradient id="pieGrad1" x1="0%" x2="100%">
+                    <stop offset="0%" stopColor="#06b6d4" />
+                    <stop offset="100%" stopColor="#7c3aed" />
+                  </linearGradient>
+                </defs>
                 <Pie data={severityData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label={(e: any) => e.name}>
                   {severityData.map((entry, i) => (
                     <Cell key={i} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip contentStyle={{ background: 'var(--color-paper-3)', border: '1px solid var(--color-rule)', borderRadius: 'var(--radius-control)' }} />
+                <Tooltip wrapperStyle={{ outline: 'none' }} contentStyle={{ background: 'var(--color-paper-3)', border: '1px solid var(--color-rule)', borderRadius: 'var(--radius-control)' }} />
               </PieChart>
             </ResponsiveContainer>
           </CardContent>
@@ -141,11 +147,17 @@ export function AnalystDashboard() {
           <CardContent>
             <ResponsiveContainer width="100%" height={250}>
               <BarChart data={hazardTypeData}>
+                <defs>
+                  <linearGradient id="barGrad" x1="0" x2="1">
+                    <stop offset="0%" stopColor="#06b6d4" stopOpacity={0.95} />
+                    <stop offset="100%" stopColor="#7c3aed" stopOpacity={0.95} />
+                  </linearGradient>
+                </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--color-rule)" />
                 <XAxis dataKey="name" tick={{ fill: 'var(--color-neutral)', fontSize: 11 }} angle={-45} textAnchor="end" height={60} />
                 <YAxis tick={{ fill: 'var(--color-neutral)' }} />
-                <Tooltip contentStyle={{ background: 'var(--color-paper-3)', border: '1px solid var(--color-rule)', borderRadius: 'var(--radius-control)' }} />
-                <Bar dataKey="count" fill="var(--color-accent)" radius={[4, 4, 0, 0]} />
+                <Tooltip wrapperStyle={{ outline: 'none' }} contentStyle={{ background: 'var(--color-paper-3)', border: '1px solid var(--color-rule)', borderRadius: 'var(--radius-control)' }} />
+                <Bar dataKey="count" fill="url(#barGrad)" radius={[8, 8, 8, 8]} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>

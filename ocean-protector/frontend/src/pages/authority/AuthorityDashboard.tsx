@@ -83,6 +83,12 @@ export function AuthorityDashboard() {
             {severityData.length > 0 ? (
               <ResponsiveContainer width="100%" height={250}>
                 <PieChart>
+                  <defs>
+                    <linearGradient id="pieGradA" x1="0%" x2="100%">
+                      <stop offset="0%" stopColor="#06b6d4" />
+                      <stop offset="100%" stopColor="#7c3aed" />
+                    </linearGradient>
+                  </defs>
                   <Pie
                     data={severityData}
                     dataKey="value"
@@ -96,13 +102,7 @@ export function AuthorityDashboard() {
                       <Cell key={i} fill={entry.color} />
                     ))}
                   </Pie>
-                  <Tooltip
-                    contentStyle={{
-                      background: 'var(--color-paper-3)',
-                      border: '1px solid var(--color-rule)',
-                      borderRadius: '8px',
-                    }}
-                  />
+                  <Tooltip wrapperStyle={{ outline: 'none' }} contentStyle={{ background: 'var(--color-paper-3)', border: '1px solid var(--color-rule)', borderRadius: '8px' }} />
                 </PieChart>
               </ResponsiveContainer>
             ) : (
