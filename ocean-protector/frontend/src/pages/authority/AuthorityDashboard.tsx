@@ -3,6 +3,14 @@ import { PageHeader } from '@/components/layout/PageHeader';
 import { StatCard } from '@/components/features/StatCard';
 import { DashboardCard } from '@/components/dashboard/DashboardCard';
 import { DashboardSection } from '@/components/dashboard/DashboardSection';
+import { AuthorityHero } from '@/components/dashboard/AuthorityHero';
+import { ResponseStats } from '@/components/dashboard/ResponseStats';
+import { TeamStatusCard } from '@/components/dashboard/TeamStatusCard';
+import { ResourceCard } from '@/components/dashboard/ResourceCard';
+import { QuickActionGrid } from '@/components/dashboard/QuickActionGrid';
+import { AlertPanel } from '@/components/dashboard/AlertPanel';
+import { OperationsFeed } from '@/components/dashboard/OperationsFeed';
+import { HeatmapPreview } from '@/components/dashboard/HeatmapPreview';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -38,6 +46,8 @@ export function AuthorityDashboard() {
 
   const recentIncidents = incidents?.slice(0, 5) || [];
 
+  const criticalAlerts = incidents?.filter((i) => i.severity === 'critical').length ?? 0;
+
   const severityData = stats?.bySeverity.map(({ severity, count }) => ({
     name: severity.charAt(0).toUpperCase() + severity.slice(1),
     value: count,
@@ -51,25 +61,21 @@ export function AuthorityDashboard() {
 
   return (
     <div className="animate-fade-in space-y-6">
-      <PageHeader
-        title="Authority Dashboard"
-        description="Manage incidents, coordinate response teams, and monitor coastal safety"
-        icon={Shield}
-      />
+      <AuthorityHero activeIncidents={incidents?.length || 0} teamsDeployed={incidents?.filter(i => i.responseTeams?.length).length || 0} criticalAlerts={criticalAlerts} readiness={88} />
 
       <DashboardSection title="Operations overview" description="Response and incident metrics">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <DashboardCard label="Pending Reports" value={stats?.underReview ?? 0} subtitle="Requires dispatch" trend="Needs attention" progress={stats?.underReview ? Math.min(100, stats.underReview * 5) : 0} Icon={Clock} />
-          <DashboardCard label="Active Incidents" value={recentIncidents.length} subtitle="Assigned / responding" progress={Math.min(100, recentIncidents.length * 8)} Icon={AlertTriangle} />
-          <DashboardCard label="Critical Incidents" value={incidents?.filter((i) => i.severity === 'critical').length ?? 0} subtitle="Immediate response" progress={incidents?.filter((i) => i.severity === 'critical').length ? 100 : 0} Icon={XCircle} />
-          <DashboardCard label="Teams Deployed" value={incidents?.filter((i) => i.responseTeams?.some(t => t.status === 'deployed')).length ?? 0} subtitle="Active teams" progress={Math.min(100, (incidents?.length || 0) * 10)} Icon={Users} />
-        </div>
+        <ResponseStats stats={[
+          { label: 'Pending Reports', value: stats?.underReview ?? 0, icon: Clock, trend: 'Needs attention' },
+          { label: 'Active Incidents', value: recentIncidents.length, icon: AlertTriangle },
+          { label: 'Critical Incidents', value: incidents?.filter((i) => i.severity === 'critical').length ?? 0, icon: XCircle },
+          { label: 'Teams Deployed', value: incidents?.filter((i) => i.responseTeams?.some((t: any) => t.status === 'deployed')).length ?? 0, icon: Users },
+        ]} />
       </DashboardSection>
 
       {/* Charts Row */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {/* Severity Distribution */}
-        <Card>
+        <Card className="rounded-xl bg-gradient-to-br from-white/4 to-white/2">
           <CardHeader>
             <CardTitle>Current incident severity</CardTitle>
           </CardHeader>
@@ -108,7 +114,7 @@ export function AuthorityDashboard() {
         </Card>
 
         {/* Hazard Types */}
-        <Card>
+        <Card className="rounded-xl bg-gradient-to-br from-white/4 to-white/2">
           <CardHeader>
             <CardTitle>Response demand by hazard type</CardTitle>
           </CardHeader>
@@ -145,7 +151,9 @@ export function AuthorityDashboard() {
       </div>
 
       {/* Active Incidents */}
-      <Card>
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
@@ -204,7 +212,37 @@ export function AuthorityDashboard() {
             </div>
           )}
         </CardContent>
-      </Card>
+          </Card>
+        </div>
+
+        <div>
+          <div className="space-y-3">
+            <div>
+              <h3 className="text-sm font-semibold">Team status</h3>
+              <div className="mt-3 grid grid-cols-1 gap-3">
+                {(incidents || []).slice(0,3).map((inc:any, idx:number) => (
+                  <TeamStatusCard key={idx} team={{ name: inc.responseTeams?.[0]?.name || 'Team', status: inc.responseTeams?.[0]?.status || 'available', assignment: inc.title, personnel: inc.responseTeams?.[0]?.personnelCount || 0, vehicles: inc.responseTeams?.[0]?.vehicleCount || 0 }} />
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <h3 className="text-sm font-semibold">Resources</h3>
+              <div className="mt-3 grid grid-cols-1 gap-3">
+                <ResourceCard resource={{ name: 'Rescue boats', type: 'Boats', available: 4, total: 6 }} />
+                <ResourceCard resource={{ name: 'Medical units', type: 'Units', available: 2, total: 3 }} />
+              </div>
+            </div>
+
+            <div>
+              <h3 className="text-sm font-semibold">Alerts</h3>
+              <div className="mt-3">
+                <AlertPanel alerts={(incidents || []).filter((i:any)=> i.severity === 'critical').map((i:any)=>({ id: i.id, title: i.title, region: i.location?.districtName, time: i.createdAt, severity: i.severity }))} />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Response Timeline */}
       {recentIncidents[0] && (
