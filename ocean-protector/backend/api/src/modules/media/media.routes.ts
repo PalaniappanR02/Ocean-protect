@@ -2,16 +2,7 @@ import { Router } from 'express';
 import multer from 'multer';
 import { uploadMedia } from './media.controller';
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/');
-  },
-  filename: (req, file, cb) => {
-    cb(null, `${Date.now()}-temp-${file.originalname}`);
-  },
-});
-
-const upload = multer({ storage });
+const upload = multer({ storage: multer.memoryStorage() });
 
 const router = Router();
 

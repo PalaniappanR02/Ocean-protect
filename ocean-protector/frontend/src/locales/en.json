@@ -1,0 +1,4 @@
+{
+  "nav": { "dashboard": "Dashboard", "report": "Report Hazard", "tracking": "Tracking", "alerts": "Alerts", "map": "Map" },
+  "report": { "hazard": "Hazard", "details": "Details", "location": "Location", "review": "Review", "sendReport": "Send report", "back": "Back" }
+}
