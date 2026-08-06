@@ -47,6 +47,11 @@ services:
       DATABASE_URL: postgresql://oceanguard:oceanguard_pass@db:5432/oceanguard_db
       CLASSIFIER_SERVICE_URL: http://classifier:8000
       CORS_ORIGIN: http://localhost:5173
+      SUPABASE_URL: https://gddtcwatahvmzgbpagsc.supabase.co
+      SUPABASE_SERVICE_ROLE_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkZHRjd2F0YWh2bXpnYnBhZ3NjIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NTkxMDA3NiwiZXhwIjoyMTAxNDg2MDc2fQ.CPogXimWbXPX6SStuNGrXVkAEiM2NIMEZ_PSg6k16Uc
+      CLOUDINARY_CLOUD_NAME: dxugxxog
+      CLOUDINARY_API_KEY: "734225795962657"
+      CLOUDINARY_API_SECRET: LSzRlrheez1Js45rJa2RnQlsFlk
     depends_on:
       db:
         condition: service_healthy
@@ -70,6 +75,11 @@ services:
         VITE_API_URL: http://localhost:4000
         VITE_SOCKET_URL: http://localhost:4000
         VITE_DATA_MODE: api
+        VITE_SUPABASE_URL: https://gddtcwatahvmzgbpagsc.supabase.co
+        VITE_SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkZHRjd2F0YWh2bXpnYnBhZ3NjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU5MTAwNzYsImV4cCI6MjEwMTQ4NjA3Nn0.8a4TgU10o6cuCFekV9Pj5CAYMKb4zWJdbvyiTsG-FBY
+        CLOUDINARY_CLOUD_NAME: dxugxxog
+        CLOUDINARY_API_KEY: "734225795962657"
+        CLOUDINARY_API_SECRET: LSzRlrheez1Js45rJa2RnQlsFlk
     container_name: oceanguard-frontend
     restart: unless-stopped
     ports:

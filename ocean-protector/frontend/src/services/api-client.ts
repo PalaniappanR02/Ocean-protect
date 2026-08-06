@@ -1,3 +1,5 @@
+import { supabase } from '@/lib/supabase';
+
 const rawApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:4000';
 
 export const normaliseBaseUrl = (value: string): string => {
@@ -18,9 +20,17 @@ export interface RequestOptions {
 
 export async function apiFetch<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const { method = 'GET', body, headers = {}, signal } = options;
+
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  const authHeader = session?.access_token
+    ? { Authorization: `Bearer ${session.access_token}` }
+    : {};
+
   const response = await fetch(`${API_URL}${path}`, {
     method,
-    headers: { 'Content-Type': 'application/json', ...headers },
+    headers: { 'Content-Type': 'application/json', ...authHeader, ...headers },
     body: body === undefined ? undefined : JSON.stringify(body),
     signal,
   });

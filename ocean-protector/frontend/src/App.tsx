@@ -30,6 +30,13 @@ import { AuthorityAlert } from '@/pages/authority/AuthorityAlerts';
 import { AuthorityMap } from '@/pages/authority/AuthorityMap';
 import { ResponseTeams } from '@/pages/authority/ResponsesTeams';
 
+import { AuthProvider } from '@/hooks/useAuth';
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
+import { Login } from '@/pages/authority/Login';
+import { Signup } from '@/pages/authority/Signup';
+
+import { ThemeProvider } from 'next-themes';
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -43,51 +50,79 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <BrowserRouter
-          future={{
-            v7_startTransition: true,
-            v7_relativeSplatPath: true,
-          }}
-        >
-          <Routes>
-            <Route element={<AppShell />}>
-              {/* Citizen */}
-              <Route path="/citizen" element={<MainLayout role="citizen" />}>
-                <Route index element={<CitizenDashboard />} />
-                <Route path="report" element={<ReportHazard />} />
-                <Route path="tracking" element={<ReportTracking />} />
-                <Route path="tracking/:trackingId" element={<ReportTracking />} />
-                <Route path="alerts" element={<CitizenAlerts />} />
-                <Route path="map" element={<CitizenMap />} />
-                <Route path="offline" element={<OfflineQueue />} />
-              </Route>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+          <AuthProvider>
+            <BrowserRouter
+              future={{
+                v7_startTransition: true,
+                v7_relativeSplatPath: true,
+              }}
+            >
+              <Routes>
+                <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<Signup />} />
 
-              {/* Analyst */}
-              <Route path="/analyst" element={<MainLayout role="analyst" />}>
-                <Route index element={<AnalystDashboard />} />
-                <Route path="reports" element={<AnalystReports />} />
-                <Route path="reports/:reportId" element={<ReportDetail />} />
-                <Route path="incidents" element={<AnalystIncidents />} />
-                <Route path="map" element={<AnalystMap />} />
-                <Route path="social" element={<SocialSignalsPage />} />
-              </Route>
+                <Route element={<AppShell />}>
+                  {/* Citizen */}
+                  <Route
+                    path="/citizen"
+                    element={
+                      <ProtectedRoute minRole="citizen">
+                        <MainLayout role="citizen" />
+                      </ProtectedRoute>
+                    }
+                  >
+                    <Route index element={<CitizenDashboard />} />
+                    <Route path="report" element={<ReportHazard />} />
+                    <Route path="tracking" element={<ReportTracking />} />
+                    <Route path="tracking/:trackingId" element={<ReportTracking />} />
+                    <Route path="alerts" element={<CitizenAlerts />} />
+                    <Route path="map" element={<CitizenMap />} />
+                    <Route path="offline" element={<OfflineQueue />} />
+                  </Route>
 
-              {/* Authority */}
-              <Route path="/authority" element={<MainLayout role="authority" />}>
-                <Route index element={<AuthorityDashboard />} />
-                <Route path="incidents" element={<AuthorityIncidents />} />
-                <Route path="incidents/:incidentId" element={<AuthorityIncidentDetail />} />
-                <Route path="incidents/:incidentId/alert" element={<AuthorityAlert />} />
-                <Route path="map" element={<AuthorityMap />} />
-                <Route path="teams" element={<ResponseTeams />} />
-              </Route>
+                  {/* Analyst */}
+                  <Route
+                    path="/analyst"
+                    element={
+                      <ProtectedRoute minRole="analyst">
+                        <MainLayout role="analyst" />
+                      </ProtectedRoute>
+                    }
+                  >
+                    <Route index element={<AnalystDashboard />} />
+                    <Route path="reports" element={<AnalystReports />} />
+                    <Route path="reports/:reportId" element={<ReportDetail />} />
+                    <Route path="incidents" element={<AnalystIncidents />} />
+                    <Route path="map" element={<AnalystMap />} />
+                    <Route path="social" element={<SocialSignalsPage />} />
+                  </Route>
 
-              {/* Default redirect */}
-              <Route path="/" element={<Navigate to="/citizen" replace />} />
-            </Route>
-          </Routes>
-        </BrowserRouter>
-        <Toaster />
+                  {/* Authority */}
+                  <Route
+                    path="/authority"
+                    element={
+                      <ProtectedRoute minRole="authority_operator">
+                        <MainLayout role="authority" />
+                      </ProtectedRoute>
+                    }
+                  >
+                    <Route index element={<AuthorityDashboard />} />
+                    <Route path="incidents" element={<AuthorityIncidents />} />
+                    <Route path="incidents/:incidentId" element={<AuthorityIncidentDetail />} />
+                    <Route path="incidents/:incidentId/alert" element={<AuthorityAlert />} />
+                    <Route path="map" element={<AuthorityMap />} />
+                    <Route path="teams" element={<ResponseTeams />} />
+                  </Route>
+
+                  {/* Default redirect */}
+                  <Route path="/" element={<Navigate to="/citizen" replace />} />
+                </Route>
+              </Routes>
+            </BrowserRouter>
+            <Toaster />
+          </AuthProvider>
+        </ThemeProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );
