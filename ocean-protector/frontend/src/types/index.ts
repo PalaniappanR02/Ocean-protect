@@ -261,7 +261,7 @@ export interface ApiError extends Error { status: number; code: string; details?
 
 export type UserRole = 'citizen' | 'analyst' | 'authority';
 export interface User { id: string; role: UserRole; name: string; email: string; phone?: string; stateCode?: string; districtName?: string; }
-export interface Toast { id: string; title: string; description?: string; variant: 'default' | 'success' | 'destructive' | 'warning'; }
+export interface Toast { id: string; title: string; description?: string; variant: 'default' | 'info' | 'success' | 'destructive' | 'warning'; }
 
 export interface OfflineQueueItem {
   id: string;

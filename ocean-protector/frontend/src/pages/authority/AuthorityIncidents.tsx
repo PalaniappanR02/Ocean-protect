@@ -14,6 +14,7 @@ import { Link } from 'react-router-dom';
 import { Search, Filter, AlertTriangle, MapPin, Clock, Users, Activity, CheckCircle } from 'lucide-react';
 import { useState, useMemo } from 'react';
 import SearchFilters from '@/components/list/SearchFilters';
+import { EmptyState } from '@/components/layout/EmptyState';
 import { formatRelativeTime, formatDateTime } from '@/lib/utils';
 
 const STATUS_FILTERS: { value: IncidentStatus | 'all'; label: string; icon: any }[] = [
@@ -143,12 +144,12 @@ export function AuthorityIncidents() {
         </div>
       ) : (
         <Card>
-          <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-            <AlertTriangle className="mb-4 h-12 w-12 text-slate-600" />
-            <h3 className="text-lg font-semibold text-slate-200">No incidents found</h3>
-            <p className="mt-1 text-sm text-slate-400">
-              No incidents match your current filters.
-            </p>
+          <CardContent className="p-4 sm:p-5">
+            <EmptyState
+              icon={AlertTriangle}
+              title="No incidents found"
+              description="No incidents match your current filters. Try clearing filters or changing the search term."
+            />
           </CardContent>
         </Card>
       )}

@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Bell, CircleUserRound, Radio, Waves, Search, ChevronDown, Sun, Moon } from 'lucide-react';
+import { Bell, CircleUserRound, Radio, Waves, Search, Sun, Moon, BellRing, ShieldAlert, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { RoleSwitcher } from './RoleSwitcher';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Drawer, DrawerBody, DrawerContent, DrawerHeader } from '@/components/ui/drawer';
 
 export function TopBar({ role }: { role: 'citizen' | 'analyst' | 'authority' }) {
   const location = useLocation();
@@ -96,7 +97,8 @@ export function TopBar({ role }: { role: 'citizen' | 'analyst' | 'authority' }) 
             size="icon"
             aria-label="Open notifications"
             aria-expanded={notifOpen}
-            onClick={() => setNotifOpen((s) => !s)}
+            aria-controls="notifications-drawer"
+            onClick={() => setNotifOpen(true)}
             className="relative"
           >
             <Bell className="h-5 w-5" aria-hidden />
@@ -105,25 +107,47 @@ export function TopBar({ role }: { role: 'citizen' | 'analyst' | 'authority' }) 
             </span>
           </Button>
 
-          <AnimatePresence>
-            {notifOpen && (
-              <motion.div
-                initial={{ opacity: 0, y: -6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                transition={{ duration: 0.22 }}
-                className="absolute right-0 mt-2 w-80 rounded-lg bg-paper-3 border border-color-rule p-3 shadow-menu z-50"
-                role="dialog"
-                aria-label="Notifications"
-              >
-                <div className="mb-2 flex items-center justify-between">
-                  <div className="text-sm font-semibold">Notifications</div>
-                  <button className="text-sm text-muted-foreground" onClick={() => setNotifOpen(false)}>Close</button>
+          <Drawer open={notifOpen} onOpenChange={setNotifOpen}>
+            <DrawerContent side="right" id="notifications-drawer" aria-label="Notifications panel">
+              <DrawerHeader>
+                <div className="pr-10">
+                  <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Live updates</p>
+                  <h3 className="mt-1 text-lg font-semibold">Notifications</h3>
                 </div>
-                <div className="text-sm text-muted-foreground">No notifications — this is a placeholder UI.</div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+              </DrawerHeader>
+              <DrawerBody>
+                <div className="space-y-3">
+                  <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="glass-panel rounded-xl p-3">
+                    <div className="flex items-start gap-3">
+                      <ShieldAlert className="mt-0.5 h-4 w-4 text-amber-500" aria-hidden="true" />
+                      <div>
+                        <p className="text-sm font-semibold">Advisory updated</p>
+                        <p className="text-xs text-muted-foreground">High wave advisory extended for 2 districts.</p>
+                      </div>
+                    </div>
+                  </motion.div>
+                  <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="glass-panel rounded-xl p-3">
+                    <div className="flex items-start gap-3">
+                      <CheckCircle2 className="mt-0.5 h-4 w-4 text-emerald-500" aria-hidden="true" />
+                      <div>
+                        <p className="text-sm font-semibold">Queue sync complete</p>
+                        <p className="text-xs text-muted-foreground">Offline reports synced successfully.</p>
+                      </div>
+                    </div>
+                  </motion.div>
+                  <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="glass-panel rounded-xl p-3">
+                    <div className="flex items-start gap-3">
+                      <BellRing className="mt-0.5 h-4 w-4 text-cyan-500" aria-hidden="true" />
+                      <div>
+                        <p className="text-sm font-semibold">Monitoring active</p>
+                        <p className="text-xs text-muted-foreground">New reports will appear here in real time.</p>
+                      </div>
+                    </div>
+                  </motion.div>
+                </div>
+              </DrawerBody>
+            </DrawerContent>
+          </Drawer>
         </div>
 
         {/* Theme toggle */}

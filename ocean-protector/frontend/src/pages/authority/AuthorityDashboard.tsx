@@ -11,6 +11,7 @@ import { QuickActionGrid } from '@/components/dashboard/QuickActionGrid';
 import { AlertPanel } from '@/components/dashboard/AlertPanel';
 import { OperationsFeed } from '@/components/dashboard/OperationsFeed';
 import { HeatmapPreview } from '@/components/dashboard/HeatmapPreview';
+import { EmptyState } from '@/components/layout/EmptyState';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -106,8 +107,13 @@ export function AuthorityDashboard() {
                 </PieChart>
               </ResponsiveContainer>
             ) : (
-              <div className="flex h-[250px] items-center justify-center text-sm text-slate-400">
-                No data available
+              <div className="h-[250px] py-4">
+                <EmptyState
+                  icon={AlertTriangle}
+                  title="No severity data"
+                  description="Severity distribution will appear once incident metrics are available."
+                  className="h-full"
+                />
               </div>
             )}
           </CardContent>
@@ -142,8 +148,13 @@ export function AuthorityDashboard() {
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="flex h-[250px] items-center justify-center text-sm text-slate-400">
-                No data available
+              <div className="h-[250px] py-4">
+                <EmptyState
+                  icon={MapIcon}
+                  title="No hazard demand data"
+                  description="Hazard demand distribution will be shown when reports are available."
+                  className="h-full"
+                />
               </div>
             )}
           </CardContent>

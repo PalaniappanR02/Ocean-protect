@@ -163,6 +163,9 @@
   }
 
   .button-base {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
     min-height: var(--control-height);
     border: 1px solid transparent;
     border-radius: var(--radius-control);
@@ -173,6 +176,17 @@
       color var(--dur-short) var(--ease-out),
       border-color var(--dur-short) var(--ease-out),
       transform var(--dur-press) var(--ease-out);
+  }
+
+  .button-base::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: radial-gradient(circle at center, rgba(255, 255, 255, 0.24) 0%, rgba(255, 255, 255, 0) 65%);
+    opacity: 0;
+    transform: scale(0.92);
+    transition: opacity 180ms var(--ease-out), transform 220ms var(--ease-out);
   }
 
   .button-primary {
@@ -443,12 +457,29 @@
     backdrop-filter: blur(6px);
   }
 
+  .dialog-surface {
+    color: var(--color-ink);
+    background: color-mix(in oklch, var(--color-paper-3) 90%, transparent);
+    border: 1px solid var(--color-rule-2);
+    border-radius: calc(var(--radius-card) + 0.25rem);
+    -webkit-backdrop-filter: blur(12px) saturate(120%);
+    backdrop-filter: blur(12px) saturate(120%);
+  }
+
   .toast-surface {
     color: var(--color-ink);
-    background: var(--color-paper-3);
+    background: color-mix(in oklch, var(--color-paper-3) 92%, transparent);
     border: 1px solid var(--color-rule-2);
     border-radius: var(--radius-card);
     box-shadow: var(--shadow-menu);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+  }
+
+  .toast-info {
+    color: var(--color-ink);
+    background: color-mix(in oklch, var(--color-info-soft) 72%, transparent);
+    border-color: color-mix(in oklch, var(--color-accent) 35%, var(--color-rule-2));
   }
 
   .toast-danger {
@@ -467,6 +498,52 @@
     color: var(--color-success);
     background: var(--color-success-soft);
     border-color: var(--color-success);
+  }
+
+  .toast-progress-wrap {
+    background: rgba(255, 255, 255, 0.12);
+  }
+
+  .toast-progress {
+    width: 100%;
+    transform-origin: left;
+    background: linear-gradient(90deg, var(--color-accent), color-mix(in oklch, var(--color-accent) 45%, #ffffff));
+    animation: toast-progress-shrink 5s linear forwards;
+  }
+
+  .toast-surface:hover .toast-progress,
+  .toast-surface:focus-within .toast-progress {
+    animation-play-state: paused;
+  }
+
+  .feedback-alert {
+    box-shadow: var(--shadow-menu);
+  }
+
+  .feedback-alert--info {
+    background: color-mix(in oklch, var(--color-info-soft) 84%, transparent);
+    border-color: color-mix(in oklch, var(--color-accent) 30%, var(--color-rule-2));
+  }
+
+  .feedback-alert--success {
+    background: color-mix(in oklch, var(--color-success-soft) 88%, transparent);
+    border-color: color-mix(in oklch, var(--color-success) 42%, var(--color-rule-2));
+  }
+
+  .feedback-alert--warning {
+    background: color-mix(in oklch, var(--color-warning-soft) 88%, transparent);
+    border-color: color-mix(in oklch, var(--color-warning) 42%, var(--color-rule-2));
+  }
+
+  .feedback-alert--danger {
+    background: color-mix(in oklch, var(--color-danger-soft) 88%, transparent);
+    border-color: color-mix(in oklch, var(--color-danger) 42%, var(--color-rule-2));
+  }
+
+  .feedback-loading-overlay {
+    background: linear-gradient(180deg, rgba(2, 6, 23, 0.16), rgba(2, 6, 23, 0.28));
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
   }
 
   .tabs-list {
@@ -519,6 +596,12 @@
 
   .button-base:active:not(:disabled) {
     transform: translateY(1px);
+  }
+
+  .button-base:active:not(:disabled)::after,
+  .button-base:focus-visible::after {
+    opacity: 1;
+    transform: scale(1.02);
   }
 
   .portal-nav-link:active,
@@ -806,6 +889,15 @@
 @keyframes pulse-skeleton {
   from { transform: translateX(0%); }
   to { transform: translateX(50%); }
+}
+
+@keyframes toast-progress-shrink {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

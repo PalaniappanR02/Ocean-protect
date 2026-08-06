@@ -14,6 +14,7 @@ import { SafetyOverviewCard } from '@/components/citizen/SafetyOverviewCard';
 import { MapPreview } from '@/components/citizen/MapPreview';
 import { SafetyTipCard } from '@/components/citizen/SafetyTipCard';
 import { CommunityCard } from '@/components/citizen/CommunityCard';
+import { LoadingOverlay } from '@/components/ui/loading-overlay';
 import { alertService, reportService, incidentService } from '@/services';
 import {
   Activity,
@@ -34,20 +35,22 @@ export function CitizenDashboard() {
   const { pendingCount, syncQueue, syncing } = useOfflineQueue();
   const isOnline = useNetworkStatus();
 
-  const { data: alerts } = useQuery({
+  const { data: alerts, isLoading: loadingAlerts } = useQuery({
     queryKey: ['alerts'],
     queryFn: () => alertService.list(),
   });
 
-  const { data: stats } = useQuery({
+  const { data: stats, isLoading: loadingStats } = useQuery({
     queryKey: ['reportStats'],
     queryFn: () => reportService.getDashboardStats(),
   });
 
-  const { data: incidents } = useQuery({
+  const { data: incidents, isLoading: loadingIncidents } = useQuery({
     queryKey: ['incidents', 'public'],
     queryFn: () => incidentService.list({ status: ['verified', 'responding', 'monitoring'] }),
   });
+
+  const isDashboardLoading = loadingAlerts || loadingStats || loadingIncidents;
 
   const activeAlerts = alerts?.filter((alert) => alert.isActive) || [];
   const publicIncidents = incidents?.filter(
@@ -55,7 +58,8 @@ export function CitizenDashboard() {
   ) || [];
 
   return (
-    <div className="animate-fade-in">
+    <div className="animate-fade-in relative">
+      {isDashboardLoading && <LoadingOverlay label="Refreshing coastal dashboard" />}
       <CitizenHero />
 
       <div className="mt-4 mb-6 flex items-center justify-between gap-4">

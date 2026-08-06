@@ -1,16 +1,22 @@
+import { useState } from 'react';
 import { PageHeader } from '@/components/layout/PageHeader';
+import { EmptyState } from '@/components/layout/EmptyState';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription, AlertIcon, AlertTitle } from '@/components/ui/alert';
+import { ButtonLoader } from '@/components/ui/button-loader';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useOfflineQueue } from '@/hooks/useOfflineQueue';
 import { useNetworkStatus } from '@/hooks/useNetworkStatus';
 import { HAZARD_TYPE_LABELS } from '@/types';
-import { WifiOff, CheckCircle, Loader2, Trash2, RefreshCw, CloudUpload } from 'lucide-react';
+import { WifiOff, CheckCircle, Trash2, CloudUpload } from 'lucide-react';
 import { formatRelativeTime } from '@/lib/utils';
 
 export function OfflineQueue() {
   const { queue, syncQueue, removeFromQueue, syncing, pendingCount } = useOfflineQueue();
   const isOnline = useNetworkStatus();
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
   return (
     <div className="animate-fade-in">
@@ -21,19 +27,29 @@ export function OfflineQueue() {
         actions={
           pendingCount > 0 && isOnline ? (
             <Button onClick={() => syncQueue()} disabled={syncing}>
-              {syncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CloudUpload className="mr-2 h-4 w-4" />}
+              {syncing ? <ButtonLoader className="mr-2" /> : <CloudUpload className="mr-2 h-4 w-4" />}
               {syncing ? 'Syncing...' : `Sync ${pendingCount} Reports`}
             </Button>
           ) : undefined
         }
       />
 
+      {!isOnline && (
+        <Alert variant="warning" className="mb-4">
+          <AlertIcon variant="warning" />
+          <div>
+            <AlertTitle>Working offline</AlertTitle>
+            <AlertDescription>Your reports are saved locally and will sync once your network returns.</AlertDescription>
+          </div>
+        </Alert>
+      )}
+
       {queue.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-center">
-          <CheckCircle className="mb-4 h-12 w-12 text-green-500" />
-          <h3 className="text-lg font-semibold text-slate-200">No Offline Reports</h3>
-          <p className="mt-1 text-sm text-muted-foreground">All your reports have been synced successfully.</p>
-        </div>
+        <EmptyState
+          icon={CheckCircle}
+          title="No offline reports"
+          description="All your reports are synced. If connectivity drops, newly submitted reports will appear here."
+        />
       ) : (
         <div className="space-y-3">
           {queue.map((item) => (
@@ -55,14 +71,25 @@ export function OfflineQueue() {
                       {item.trackingId && <span className="font-mono text-ocean-400">{item.trackingId}</span>}
                     </div>
                     {item.syncError && (
-                      <p className="mt-2 text-xs text-red-400">Error: {item.syncError}</p>
+                      <Alert variant="destructive" className="mt-3 p-3">
+                        <AlertIcon variant="destructive" />
+                        <div>
+                          <AlertTitle className="text-xs">Sync failed</AlertTitle>
+                          <AlertDescription className="text-xs">{item.syncError}</AlertDescription>
+                        </div>
+                      </Alert>
                     )}
                   </div>
                   {item.state === 'synced' && (
                     <CheckCircle className="h-5 w-5 shrink-0 text-green-400" />
                   )}
                   {item.state !== 'synced' && (
-                    <Button variant="ghost" size="icon" onClick={() => removeFromQueue(item.id!)}>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label={`Delete offline report ${item.title}`}
+                      onClick={() => setPendingDeleteId(item.id!)}
+                    >
                       <Trash2 className="h-4 w-4 text-slate-500" />
                     </Button>
                   )}
@@ -72,6 +99,33 @@ export function OfflineQueue() {
           ))}
         </div>
       )}
+
+      <Dialog open={Boolean(pendingDeleteId)} onOpenChange={(open) => !open && setPendingDeleteId(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete offline report?</DialogTitle>
+            <DialogDescription>
+              This removes the saved report from your device queue. This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPendingDeleteId(null)}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                if (pendingDeleteId) {
+                  removeFromQueue(pendingDeleteId);
+                }
+                setPendingDeleteId(null);
+              }}
+            >
+              Delete report
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

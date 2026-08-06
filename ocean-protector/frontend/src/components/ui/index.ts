@@ -8,4 +8,8 @@ export * from './switch';
 export * from './select';
 export * from './tabs';
 export * from './dialog';
+export * from './drawer';
+export * from './alert';
+export * from './loading-overlay';
+export * from './button-loader';
 export * from './progress';
