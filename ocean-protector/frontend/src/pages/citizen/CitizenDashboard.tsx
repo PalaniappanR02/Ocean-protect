@@ -2,9 +2,19 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { StatCard } from '@/components/features/StatCard';
+import { DashboardCard } from '@/components/dashboard/DashboardCard';
+import { DashboardSection } from '@/components/dashboard/DashboardSection';
 import { PublicAlertCard } from '@/components/features/PublicAlertCard';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { CitizenHero } from '@/components/citizen/CitizenHero';
+import { QuickActionCard } from '@/components/citizen/QuickActionCard';
+import { WeatherCard } from '@/components/citizen/WeatherCard';
+import { SafetyOverviewCard } from '@/components/citizen/SafetyOverviewCard';
+import { MapPreview } from '@/components/citizen/MapPreview';
+import { SafetyTipCard } from '@/components/citizen/SafetyTipCard';
+import { CommunityCard } from '@/components/citizen/CommunityCard';
+import { LoadingOverlay } from '@/components/ui/loading-overlay';
 import { alertService, reportService, incidentService } from '@/services';
 import {
   Activity,
@@ -25,20 +35,22 @@ export function CitizenDashboard() {
   const { pendingCount, syncQueue, syncing } = useOfflineQueue();
   const isOnline = useNetworkStatus();
 
-  const { data: alerts } = useQuery({
+  const { data: alerts, isLoading: loadingAlerts } = useQuery({
     queryKey: ['alerts'],
     queryFn: () => alertService.list(),
   });
 
-  const { data: stats } = useQuery({
+  const { data: stats, isLoading: loadingStats } = useQuery({
     queryKey: ['reportStats'],
     queryFn: () => reportService.getDashboardStats(),
   });
 
-  const { data: incidents } = useQuery({
+  const { data: incidents, isLoading: loadingIncidents } = useQuery({
     queryKey: ['incidents', 'public'],
     queryFn: () => incidentService.list({ status: ['verified', 'responding', 'monitoring'] }),
   });
+
+  const isDashboardLoading = loadingAlerts || loadingStats || loadingIncidents;
 
   const activeAlerts = alerts?.filter((alert) => alert.isActive) || [];
   const publicIncidents = incidents?.filter(
@@ -46,59 +58,21 @@ export function CitizenDashboard() {
   ) || [];
 
   return (
-    <div className="animate-fade-in">
-      <PageHeader
-        title="Coastal safety near you"
-        description="Check current warnings, report what you see, and follow the response without needing technical coastal knowledge."
-        icon={ShieldCheck}
-        actions={
-          <>
-            {pendingCount > 0 && (
-              <Button variant="outline" onClick={() => syncQueue()} disabled={syncing || !isOnline}>
-                <WifiOff className="mr-2 h-4 w-4" aria-hidden="true" />
-                Sync {pendingCount} offline
-              </Button>
-            )}
-            <Button asChild>
-              <Link to="/citizen/report">
-                <FileWarning className="mr-2 h-4 w-4" aria-hidden="true" />
-                Report hazard
-              </Link>
+    <div className="animate-fade-in relative">
+      {isDashboardLoading && <LoadingOverlay label="Refreshing coastal dashboard" />}
+      <CitizenHero />
+
+      <div className="mt-4 mb-6 flex items-center justify-between gap-4">
+        <div />
+        <div>
+          {pendingCount > 0 && (
+            <Button variant="outline" onClick={() => syncQueue()} disabled={syncing || !isOnline}>
+              <WifiOff className="mr-2 h-4 w-4" aria-hidden="true" />
+              Sync {pendingCount} offline
             </Button>
-          </>
-        }
-      />
-
-      <section className="citizen-workbench" aria-labelledby="report-hazard-heading">
-        <div className="report-callout">
-          <div>
-            <FileWarning className="h-7 w-7 text-primary" aria-hidden="true" />
-            <h2 id="report-hazard-heading" className="mt-5 max-w-2xl text-[clamp(2rem,4vw,3.5rem)] font-semibold leading-[1.05] tracking-[-0.04em]">
-              See flooding, unusual waves, erosion, or pollution?
-            </h2>
-            <p className="mt-4 max-w-[68ch] text-sm leading-6 text-muted-foreground sm:text-base">
-              Tell us what happened and share your location. OceanGuard will save the report offline if the network drops, then send it when your connection returns.
-            </p>
-          </div>
-          <Button asChild size="lg" className="mt-7 w-full sm:w-auto">
-            <Link to="/citizen/report">
-              Start a hazard report
-              <ArrowRight className="ml-2 h-5 w-5" aria-hidden="true" />
-            </Link>
-          </Button>
+          )}
         </div>
-
-        <aside className="emergency-callout" aria-labelledby="immediate-danger-heading">
-          <Phone className="h-6 w-6" aria-hidden="true" />
-          <h2 id="immediate-danger-heading" className="mt-5 text-xl font-semibold text-inherit">Immediate danger?</h2>
-          <p className="mt-3 text-sm leading-6">
-            Move away from the shoreline and call emergency services. Do not enter unsafe water or delay leaving to collect evidence.
-          </p>
-          <Button asChild variant="destructive" className="mt-6 w-full">
-            <a href="tel:112">Call 112</a>
-          </Button>
-        </aside>
-      </section>
+      </div>
 
       {activeAlerts.length > 0 && (
         <section className="mb-8" aria-labelledby="active-alerts-heading">
@@ -119,36 +93,26 @@ export function CitizenDashboard() {
         </section>
       )}
 
-      <section className="mb-8" aria-label="Current coastal activity">
-        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-          <StatCard label="Active alerts" value={activeAlerts.length} icon={Radio} color="red" />
-          <StatCard label="Active incidents" value={publicIncidents.length} icon={Activity} color="amber" />
-          <StatCard label="Reports today" value={stats?.last24Hours || 0} icon={FileWarning} color="ocean" />
-          <StatCard label="Saved offline" value={pendingCount} icon={WifiOff} color="amber" />
+      <DashboardSection title="Current coastal activity" description="At-a-glance metrics and quick actions">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <DashboardCard label="Active alerts" value={activeAlerts.length} subtitle="Active safety warnings" trend="+2%" progress={Math.min(100, activeAlerts.length * 5)} Icon={Radio} />
+          <DashboardCard label="Active incidents" value={publicIncidents.length} subtitle="Verified nearby incidents" trend="-1%" progress={Math.min(100, publicIncidents.length * 8)} Icon={Activity} />
+          <DashboardCard label="Reports today" value={stats?.last24Hours || 0} subtitle="Citizen reports in last 24h" trend="+8%" progress={Math.min(100, (stats?.last24Hours || 0) * 4)} Icon={FileWarning} />
+          <DashboardCard label="Saved offline" value={pendingCount} subtitle="Pending sync" trend={syncing ? 'Syncing…' : undefined} progress={Math.min(100, pendingCount * 10)} Icon={WifiOff} />
         </div>
-      </section>
+      </DashboardSection>
 
-      <section className="mb-8" aria-labelledby="citizen-tools-heading">
-        <h2 id="citizen-tools-heading" className="mb-3 text-lg font-semibold">What you can do next</h2>
-        <div className="citizen-action-list">
-          <Link to="/citizen/map" className="citizen-action-link">
-            <Map className="h-5 w-5 text-primary" aria-hidden="true" />
-            <span className="min-w-0">
-              <span className="block font-semibold">Open the hazard map</span>
-              <span className="mt-0.5 block text-sm text-muted-foreground">See verified coastal hazards and affected areas.</span>
-            </span>
-            <ArrowRight className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-          </Link>
-          <Link to="/citizen/tracking" className="citizen-action-link">
-            <Activity className="h-5 w-5 text-primary" aria-hidden="true" />
-            <span className="min-w-0">
-              <span className="block font-semibold">Track my reports</span>
-              <span className="mt-0.5 block text-sm text-muted-foreground">Check verification and response progress.</span>
-            </span>
-            <ArrowRight className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-          </Link>
+      <DashboardSection title="Quick actions" description="Fast access to important tasks">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4">
+          <QuickActionCard Icon={FileWarning} label="Report Hazard" onActivate={() => window.location.assign('/citizen/report')} />
+          <QuickActionCard Icon={Map} label="Hazard Map" onActivate={() => window.location.assign('/citizen/map')} />
+          <QuickActionCard Icon={AlertTriangle} label="Safety Alerts" onActivate={() => window.location.assign('/citizen/alerts')} />
+          <QuickActionCard Icon={WifiOff} label="Offline Reports" onActivate={() => window.location.assign('/citizen/offline')} />
+          <QuickActionCard Icon={Phone} label="Emergency Contacts" onActivate={() => { /* placeholder */ }} />
+          <QuickActionCard Icon={Activity} label="Marine Safety Tips" onActivate={() => { /* placeholder */ }} />
+          <QuickActionCard Icon={Radio} label="Weather" onActivate={() => { /* placeholder */ }} />
         </div>
-      </section>
+      </DashboardSection>
 
       {publicIncidents.length > 0 && (
         <section aria-labelledby="verified-incidents-heading">

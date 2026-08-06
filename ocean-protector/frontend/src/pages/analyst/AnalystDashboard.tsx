@@ -1,6 +1,15 @@
 import { useQuery } from '@tanstack/react-query';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { StatCard } from '@/components/features/StatCard';
+import { DashboardCard } from '@/components/dashboard/DashboardCard';
+import { DashboardSection } from '@/components/dashboard/DashboardSection';
+import { AnalystHero } from '@/components/dashboard/AnalystHero';
+import { VerificationQueue } from '@/components/dashboard/VerificationQueue';
+import { ConfidenceGauge } from '@/components/dashboard/ConfidenceGauge';
+import { HeatmapPreview } from '@/components/dashboard/HeatmapPreview';
+import { IncidentTimeline } from '@/components/dashboard/IncidentTimeline';
+import { QuickActionCard } from '@/components/dashboard/QuickActionCard';
+import { RecentActivity } from '@/components/dashboard/RecentActivity';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ReportCard } from '@/components/features/ReportCard';
@@ -56,39 +65,53 @@ export function AnalystDashboard() {
 
   return (
     <div className="animate-fade-in">
-      <PageHeader
-        title="Analyst Dashboard"
-        description="Review and verify citizen hazard reports, manage incidents, and coordinate response"
-        icon={Activity}
-      />
+      <AnalystHero totalIncidents={recentIncidents?.length || 0} verificationQueue={pendingReports?.total || 0} />
 
       {/* Stats */}
-      <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-[1.2fr_1fr_1fr_1fr]">
-        <StatCard label="Total Reports" value={stats?.total || 0} icon={FileWarning} color="ocean" />
-        <StatCard label="Pending Review" value={stats?.underReview || 0} icon={Clock} color="amber" trend="Needs attention" />
-        <StatCard label="Verified" value={stats?.verified || 0} icon={CheckCircle} color="green" />
-        <StatCard label="Rejected" value={stats?.rejected || 0} icon={XCircle} color="red" />
-      </div>
+      <DashboardSection title="Overview" description="Key metrics for verification and response">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <DashboardCard label="Total Reports" value={stats?.total || 0} subtitle="All-time" trend="+4%" progress={stats?.total ? Math.min(100, (stats.total / 1000) * 100) : 0} Icon={FileWarning} />
+          <DashboardCard label="Pending Review" value={stats?.underReview || 0} subtitle="Needs verification" trend="Needs attention" progress={stats?.underReview ? Math.min(100, stats.underReview * 5) : 0} Icon={Clock} />
+          <DashboardCard label="Verified" value={stats?.verified || 0} subtitle="Confirmed reports" trend="Stable" progress={stats?.verified ? Math.min(100, (stats.verified / Math.max(1, stats.total || 1)) * 100) : 0} Icon={CheckCircle} />
+          <DashboardCard label="Rejected" value={stats?.rejected || 0} subtitle="False or duplicates" trend="-2%" progress={stats?.rejected ? Math.min(100, stats.rejected * 5) : 0} Icon={XCircle} />
+        </div>
+      </DashboardSection>
 
-      <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatCard label="Active Incidents" value={recentIncidents?.length || 0} icon={AlertTriangle} color="orange" />
-        <StatCard label="Critical Incidents" value={recentIncidents?.filter((i) => i.severity === 'critical').length || 0} icon={AlertTriangle} color="red" />
-        <StatCard label="Social Signals" value={socialTrends?.totalSignals || 0} icon={Radio} color="ocean" />
-        <StatCard label="High Urgency Signals" value={socialTrends?.highUrgency || 0} icon={Radio} color="red" />
-      </div>
+      <DashboardSection title="Live signals & incidents" description="Active incident and social signal overview">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <DashboardCard label="Active Incidents" value={recentIncidents?.length || 0} subtitle="Verified / responding" progress={recentIncidents?.length ? Math.min(100, recentIncidents.length * 8) : 0} Icon={AlertTriangle} />
+          <DashboardCard label="Critical Incidents" value={recentIncidents?.filter((i) => i.severity === 'critical').length || 0} subtitle="Immediate attention" progress={recentIncidents?.filter((i) => i.severity === 'critical').length ? 100 : 0} Icon={AlertTriangle} />
+          <DashboardCard label="Social Signals" value={socialTrends?.totalSignals || 0} subtitle="Trends in social data" progress={socialTrends?.totalSignals ? Math.min(100, socialTrends.totalSignals / 10) : 0} Icon={Radio} />
+          <DashboardCard label="High Urgency Signals" value={socialTrends?.highUrgency || 0} subtitle="Priority signals" progress={socialTrends?.highUrgency ? Math.min(100, socialTrends.highUrgency * 10) : 0} Icon={Radio} />
+        </div>
+      </DashboardSection>
 
-      <div className="mb-6 grid gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(340px,1fr)]">
-        <Card className="overflow-hidden">
-          <CardHeader><CardTitle>Live evidence map</CardTitle></CardHeader>
-          <CardContent className="p-0"><HazardMap reports={pendingReports?.items} incidents={recentIncidents} regions={regions} className="h-[520px]" /></CardContent>
-        </Card>
-        <Card>
-          <CardHeader><CardTitle>Verification queue · {pendingReports?.total || 0} reports</CardTitle></CardHeader>
-          <CardContent className="space-y-3">
-            {pendingReports?.items.slice(0, 4).map((report) => <ReportCard key={report.id} report={report} />)}
-            {!pendingReports?.items.length && <p className="py-8 text-center text-sm text-muted-foreground">No reports awaiting review</p>}
-          </CardContent>
-        </Card>
+      <div className="mb-6 grid gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(360px,1fr)]">
+        <div>
+          <HeatmapPreview reports={pendingReports?.items} incidents={recentIncidents} regions={regions} />
+
+          <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <QuickActionCard Icon={FileWarning} label="Verify reports" description="Open verification workflow" onActivate={() => window.location.assign('/analyst/reports')} />
+            <QuickActionCard Icon={Activity} label="Open Map" description="Full map view" onActivate={() => window.location.assign('/analyst/map')} />
+            <QuickActionCard Icon={TrendingUp} label="Generate Alert" description="Trigger a public alert" onActivate={() => window.location.assign('/analyst/alerts/new')} />
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          <div className="rounded-lg bg-gradient-to-br from-white/3 to-white/2 p-4 shadow-sm backdrop-blur-sm">
+            <h3 className="text-sm font-semibold">Verification queue · {pendingReports?.total || 0} reports</h3>
+            <div className="mt-3">
+              <VerificationQueue reports={pendingReports} />
+            </div>
+          </div>
+
+          <div className="rounded-lg bg-gradient-to-br from-white/3 to-white/2 p-4 shadow-sm backdrop-blur-sm">
+            <h3 className="text-sm font-semibold">Activity feed</h3>
+            <div className="mt-3">
+              <RecentActivity activities={(socialTrends as any)?.activities || []} />
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Decision-support charts */}
@@ -100,12 +123,18 @@ export function AnalystDashboard() {
           <CardContent>
             <ResponsiveContainer width="100%" height={250}>
               <PieChart>
+                <defs>
+                  <linearGradient id="pieGrad1" x1="0%" x2="100%">
+                    <stop offset="0%" stopColor="#06b6d4" />
+                    <stop offset="100%" stopColor="#7c3aed" />
+                  </linearGradient>
+                </defs>
                 <Pie data={severityData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label={(e: any) => e.name}>
                   {severityData.map((entry, i) => (
                     <Cell key={i} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip contentStyle={{ background: 'var(--color-paper-3)', border: '1px solid var(--color-rule)', borderRadius: 'var(--radius-control)' }} />
+                <Tooltip wrapperStyle={{ outline: 'none' }} contentStyle={{ background: 'var(--color-paper-3)', border: '1px solid var(--color-rule)', borderRadius: 'var(--radius-control)' }} />
               </PieChart>
             </ResponsiveContainer>
           </CardContent>
@@ -118,11 +147,17 @@ export function AnalystDashboard() {
           <CardContent>
             <ResponsiveContainer width="100%" height={250}>
               <BarChart data={hazardTypeData}>
+                <defs>
+                  <linearGradient id="barGrad" x1="0" x2="1">
+                    <stop offset="0%" stopColor="#06b6d4" stopOpacity={0.95} />
+                    <stop offset="100%" stopColor="#7c3aed" stopOpacity={0.95} />
+                  </linearGradient>
+                </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--color-rule)" />
                 <XAxis dataKey="name" tick={{ fill: 'var(--color-neutral)', fontSize: 11 }} angle={-45} textAnchor="end" height={60} />
                 <YAxis tick={{ fill: 'var(--color-neutral)' }} />
-                <Tooltip contentStyle={{ background: 'var(--color-paper-3)', border: '1px solid var(--color-rule)', borderRadius: 'var(--radius-control)' }} />
-                <Bar dataKey="count" fill="var(--color-accent)" radius={[4, 4, 0, 0]} />
+                <Tooltip wrapperStyle={{ outline: 'none' }} contentStyle={{ background: 'var(--color-paper-3)', border: '1px solid var(--color-rule)', borderRadius: 'var(--radius-control)' }} />
+                <Bar dataKey="count" fill="url(#barGrad)" radius={[8, 8, 8, 8]} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>

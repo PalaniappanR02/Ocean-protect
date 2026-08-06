@@ -66,33 +66,28 @@ export function HazardMap({
             key={report.id}
             center={[report.latitude, report.longitude]}
             radius={radius}
+            className={`map-marker map-marker--${report.severity}`}
             pathOptions={{
               color,
               fillColor: color,
-              fillOpacity: 0.4,
+              fillOpacity: 0.5,
               weight: 2,
             }}
             eventHandlers={{
               click: () => onMarkerClick?.(report.id),
             }}
           >
-            <Popup>
-              <div className="text-xs">
-                <div className="mb-1 font-semibold">{report.title}</div>
-                <div className="text-muted-foreground">
-                  {HAZARD_TYPE_LABELS[report.hazardType]}
-                </div>
-                <div className="mt-1 text-muted-foreground">
-                  {report.districtName}, {report.stateCode}
-                </div>
-                <div className="text-muted-foreground">
-                  {formatRelativeTime(report.observedAt)}
-                </div>
-                {report.confidenceScore !== undefined && (
-                  <div className="mt-1 text-muted-foreground">
-                    Confidence: {report.confidenceScore}%
+            <Popup className="map-popup">
+              <div className="map-popup-card">
+                <div className="flex items-start gap-3">
+                  <div className="h-12 w-12 shrink-0 rounded-md bg-gradient-to-br from-cyan-500 to-indigo-500 flex items-center justify-center text-white text-sm">IMG</div>
+                  <div>
+                    <div className="font-semibold text-sm">{report.title}</div>
+                    <div className="text-xs text-muted-foreground">{HAZARD_TYPE_LABELS[report.hazardType]}</div>
+                    <div className="mt-1 text-xs text-muted-foreground">{report.districtName}, {report.stateCode}</div>
+                    <div className="mt-1 text-xs text-muted-foreground">{formatRelativeTime(report.observedAt)}</div>
                   </div>
-                )}
+                </div>
               </div>
             </Popup>
           </CircleMarker>
@@ -110,34 +105,32 @@ export function HazardMap({
             key={incident.id}
             center={[incident.location.latitude, incident.location.longitude]}
             radius={radius}
+            className={`map-marker map-marker--${incident.severity} map-marker--incident ${isResponding ? 'map-marker--active' : ''}`}
             pathOptions={{
               color,
               fillColor: color,
-              fillOpacity: 0.5,
+              fillOpacity: 0.6,
               weight: 3,
             }}
             eventHandlers={{
               click: () => onMarkerClick?.(incident.id),
             }}
           >
-            <Popup>
-              <div className="text-xs">
-                <div className="mb-1 font-semibold">{incident.title}</div>
-                <div className="text-muted-foreground">{incident.incidentCode}</div>
-                <div className="mt-1 text-muted-foreground">
-                  {incident.location.districtName}, {incident.location.stateCode}
-                </div>
-                <div className="text-muted-foreground">
-                  Status: {incident.status.replace(/_/g, ' ')}
-                </div>
-                <div className="text-muted-foreground">
-                  Reports: {incident.reportCount}
-                </div>
-                {isResponding && (
-                  <div className="mt-1 text-orange-400 font-medium">
-                    Response team deployed
+            <Popup className="map-popup">
+              <div className="map-popup-card">
+                <div className="flex items-start gap-3">
+                  <div className="h-14 w-14 shrink-0 rounded-md bg-gradient-to-br from-red-600 to-orange-500 flex items-center justify-center text-white text-sm">INC</div>
+                  <div>
+                    <div className="font-semibold text-sm">{incident.title}</div>
+                    <div className="text-xs text-muted-foreground">{incident.incidentCode}</div>
+                    <div className="mt-1 text-xs text-muted-foreground">{incident.location.districtName}, {incident.location.stateCode}</div>
+                    <div className="mt-1 text-xs text-muted-foreground">Status: {incident.status.replace(/_/g, ' ')}</div>
+                    <div className="mt-1 text-xs text-muted-foreground">Reports: {incident.reportCount}</div>
+                    {isResponding && (
+                      <div className="mt-1 text-sm text-amber-400 font-medium">Response team deployed</div>
+                    )}
                   </div>
-                )}
+                </div>
               </div>
             </Popup>
           </CircleMarker>

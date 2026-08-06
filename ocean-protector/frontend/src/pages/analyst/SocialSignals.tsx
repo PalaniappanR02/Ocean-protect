@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { socialService } from '@/services';
 import { Radio, TrendingUp, AlertTriangle, Twitter } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import SearchFilters from '@/components/list/SearchFilters';
 
 export function SocialSignalsPage() {
   const { data: signals, isLoading } = useQuery({
@@ -18,6 +20,8 @@ export function SocialSignalsPage() {
     queryFn: () => socialService.getTrends(),
   });
 
+  const [search, setSearch] = useState('');
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -25,6 +29,13 @@ export function SocialSignalsPage() {
       </div>
     );
   }
+
+  const filtered = useMemo(() => {
+    if (!signals) return [];
+    const q = search.trim().toLowerCase();
+    if (!q) return signals;
+    return signals.filter(s => (s.content||'').toLowerCase().includes(q) || (s.authorDisplayName||'').toLowerCase().includes(q));
+  }, [signals, search]);
 
   return (
     <div className="animate-fade-in">
@@ -59,10 +70,16 @@ export function SocialSignalsPage() {
         </Card>
       )}
 
+      <div className="mb-4">
+        <SearchFilters value={search} onChange={setSearch} onClear={()=>setSearch('')} placeholder="Search signals..." />
+      </div>
+
       {/* Signals */}
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
-        {signals?.map((signal) => (
-          <SocialSignalCard key={signal.id} signal={signal} />
+        {(filtered || []).map((signal) => (
+          <div key={signal.id} className="glass-panel p-3">
+            <SocialSignalCard signal={signal} />
+          </div>
         ))}
       </div>
     </div>

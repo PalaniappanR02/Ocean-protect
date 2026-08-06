@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { HazardMap } from '@/components/features/HazardMap';
+import MapShell from '@/components/map/MapShell';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { reportService, incidentService, regionService } from '@/services';
 import { Map } from 'lucide-react';
@@ -31,11 +31,11 @@ export function CitizenMap() {
 
       <Card>
         <CardContent className="p-0">
-          <HazardMap
+          <MapShell
             reports={reports?.items || []}
             incidents={incidents || []}
             regions={regions || []}
-            className="h-[700px] rounded-lg"
+            className="h-[60vh] md:h-[75vh] lg:h-[calc(100dvh-12rem)] rounded-lg"
           />
         </CardContent>
       </Card>
