@@ -6,6 +6,10 @@ import { z } from 'zod';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Input, Label, Textarea } from '@/components/ui';
+import FloatingInput from '@/components/form/FloatingInput';
+import FloatingTextarea from '@/components/form/FloatingTextarea';
+import FileDropzone from '@/components/form/FileDropzone';
+import SeveritySelector from '@/components/form/SeveritySelector';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/useToast';
@@ -174,23 +178,17 @@ export function ReportHazard() {
               <CardTitle>What did you observe?</CardTitle>
             </CardHeader>
             <CardContent>
-              <fieldset>
+              <div>
                 <legend className="sr-only">Choose one coastal hazard type</legend>
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                  {(Object.keys(HAZARD_TYPE_LABELS) as HazardType[]).map((type) => {
-                    const selected = watch('hazardType') === type;
-                    return (
-                      <label
-                        key={type}
-                        className={cn('hazard-choice', selected && 'hazard-choice--selected')}
-                      >
-                        <input type="radio" value={type} {...register('hazardType')} className="sr-only" />
-                        <span className="text-xs font-semibold sm:text-sm">{HAZARD_TYPE_LABELS[type]}</span>
-                      </label>
-                    );
-                  })}
-                </div>
-              </fieldset>
+                <SeveritySelector
+                  options={(Object.keys(HAZARD_TYPE_LABELS) as HazardType[]).map((k) => HAZARD_TYPE_LABELS[k])}
+                  value={HAZARD_TYPE_LABELS[watch('hazardType') as HazardType]}
+                  onChange={(label) => {
+                    const key = (Object.keys(HAZARD_TYPE_LABELS) as HazardType[]).find(k => HAZARD_TYPE_LABELS[k] === label);
+                    if (key) setValue('hazardType', key);
+                  }}
+                />
+              </div>
             </CardContent>
           </Card>
         )}
@@ -201,34 +199,24 @@ export function ReportHazard() {
               <CardTitle>Describe what happened</CardTitle>
             </CardHeader>
             <CardContent className="space-y-5">
-              <div className="space-y-2">
-                <Label htmlFor="title">Short summary</Label>
-                <Input
-                  id="title"
-                  placeholder="Example: Large waves crossing the sea wall"
-                  aria-required="true"
-                  aria-invalid={Boolean(errors.title)}
-                  aria-describedby="title-help"
-                  {...register('title')}
-                />
-                <p id="title-help" className={cn('min-h-[1lh] text-xs', errors.title ? 'text-destructive' : 'text-muted-foreground')}>
-                  {errors.title?.message || 'Name the hazard and the place where possible.'}
-                </p>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="description">What you saw</Label>
-                <Textarea
-                  id="description"
-                  rows={5}
-                  placeholder="Include direction, affected area, and whether anyone is in danger."
-                  aria-required="true"
-                  aria-invalid={Boolean(errors.description)}
-                  aria-describedby="description-help"
-                  {...register('description')}
-                />
-                <p id="description-help" className={cn('min-h-[1lh] text-xs', errors.description ? 'text-destructive' : 'text-muted-foreground')}>
-                  {errors.description?.message || 'Describe only what you can observe from a safe place.'}
-                </p>
+              <div className="space-y-3">
+                <div>
+                  <FloatingInput id="title" label="Short summary" icon={FileWarning} aria-required="true" aria-invalid={Boolean(errors.title)} aria-describedby="title-help" {...register('title')} />
+                  <p id="title-help" className={cn('min-h-[1lh] text-xs', errors.title ? 'text-destructive' : 'text-muted-foreground')}>
+                    {errors.title?.message || 'Name the hazard and the place where possible.'}
+                  </p>
+                </div>
+
+                <div>
+                  <FloatingTextarea id="description" label="What you saw" rows={5} aria-required="true" aria-invalid={Boolean(errors.description)} aria-describedby="description-help" {...register('description')} />
+                  <p id="description-help" className={cn('min-h-[1lh] text-xs', errors.description ? 'text-destructive' : 'text-muted-foreground')}>
+                    {errors.description?.message || 'Describe only what you can observe from a safe place.'}
+                  </p>
+                </div>
+
+                <div>
+                  <FileDropzone onFiles={(files)=>{ /* preview only - not uploaded */ }} />
+                </div>
               </div>
             </CardContent>
           </Card>

@@ -10,13 +10,15 @@ import {
 } from 'lucide-react';
 import { RESPONSE_TEAM_TYPE_LABELS } from '@/types';
 import type { ResponseTeamType } from '@/types';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import SearchFilters from '@/components/list/SearchFilters';
 import { Link } from 'react-router-dom';
 
 const TEAM_TYPES: ResponseTeamType[] = ['ndrf', 'sdma', 'ndrf_marine', 'coast_guard', 'marine_police', 'fire_rescue', 'revenue', 'volunteer'];
 
 export function ResponseTeams() {
   const [filter, setFilter] = useState<ResponseTeamType | 'all'>('all');
+  const [search, setSearch] = useState('');
 
   const { data: incidents } = useQuery({
     queryKey: ['incidents', 'teams'],
@@ -28,9 +30,12 @@ export function ResponseTeams() {
     (i.responseTeams || []).map((t) => ({ ...t, incident: i }))
   ) || [];
 
-  const filteredTeams = filter === 'all'
-    ? allTeams
-    : allTeams.filter((t) => t.type === filter);
+  const filteredTeams = useMemo(() => {
+    const byType = filter === 'all' ? allTeams : allTeams.filter((t) => t.type === filter);
+    const q = search.trim().toLowerCase();
+    if (!q) return byType;
+    return byType.filter(t => (t.name||'').toLowerCase().includes(q) || (t.incident?.title||'').toLowerCase().includes(q));
+  }, [allTeams, filter, search]);
 
   // Group by type
   const teamsByType = TEAM_TYPES.map((type) => ({
@@ -101,6 +106,12 @@ export function ResponseTeams() {
       </div>
 
       {/* Filter */}
+      <div className="mb-3">
+        <div className="mb-2">
+          <SearchFilters value={search} onChange={setSearch} onClear={()=>setSearch('')} placeholder="Search teams or incidents..." />
+        </div>
+      </div>
+
       <div className="flex flex-wrap gap-2">
         <Button
           variant={filter === 'all' ? 'default' : 'outline'}
@@ -129,7 +140,7 @@ export function ResponseTeams() {
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {filteredTeams.length > 0 ? (
           filteredTeams.map((team) => (
-            <Card key={team.id}>
+            <Card key={team.id} className="glass-panel">
               <CardContent className="p-4">
                 <ResponseTeamCard team={team} />
                 {team.incident && (

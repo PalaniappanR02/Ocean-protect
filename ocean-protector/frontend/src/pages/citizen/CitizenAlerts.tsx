@@ -4,8 +4,9 @@ import { PublicAlertCard } from '@/components/features/PublicAlertCard';
 import { EmptyState } from '@/components/layout/EmptyState';
 import { alertService } from '@/services';
 import { Radio, ShieldCheck } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { LoadingSkeleton } from '@/components/layout/LoadingSkeleton';
+import SearchFilters from '@/components/list/SearchFilters';
 
 export function CitizenAlerts() {
   const { data: alerts, isLoading } = useQuery({
@@ -14,6 +15,14 @@ export function CitizenAlerts() {
   });
 
   const [acknowledged, setAcknowledged] = useState<Set<string>>(new Set());
+  const [search, setSearch] = useState('');
+
+  const filtered = useMemo(() => {
+    if (!alerts) return [];
+    const q = search.trim().toLowerCase();
+    if (!q) return alerts;
+    return alerts.filter(a => (a.messageTitle || '').toLowerCase().includes(q) || (a.messageBody || '').toLowerCase().includes(q));
+  }, [alerts, search]);
 
   const handleAcknowledge = (id: string) => {
     setAcknowledged((prev) => new Set([...prev, id]));
@@ -32,6 +41,10 @@ export function CitizenAlerts() {
         icon={Radio}
       />
 
+      <div className="mb-4">
+        <SearchFilters value={search} onChange={setSearch} onClear={() => setSearch('')} placeholder="Search alerts..." />
+      </div>
+
       {(!alerts || alerts.length === 0) ? (
         <EmptyState
           icon={ShieldCheck}
@@ -40,14 +53,15 @@ export function CitizenAlerts() {
         />
       ) : (
         <div className="space-y-4">
-          {alerts.map((alert) => (
-            <PublicAlertCard
-              key={alert.id}
-              alert={alert}
-              detailed
-              onAcknowledge={() => handleAcknowledge(alert.id)}
-              acknowledged={acknowledged.has(alert.id)}
-            />
+          {filtered.map((alert) => (
+            <div key={alert.id} className="glass-panel p-3">
+              <PublicAlertCard
+                alert={alert}
+                detailed
+                onAcknowledge={() => handleAcknowledge(alert.id)}
+                acknowledged={acknowledged.has(alert.id)}
+              />
+            </div>
           ))}
         </div>
       )}

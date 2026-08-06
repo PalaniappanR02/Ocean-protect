@@ -2,7 +2,8 @@ import { Outlet } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
 import { useNetworkStatus } from '@/hooks/useNetworkStatus';
-import { Wifi, WifiOff } from 'lucide-react';
+import { Wifi } from 'lucide-react';
+import { Alert, AlertDescription, AlertIcon, AlertTitle } from '@/components/ui/alert';
 
 export function MainLayout({ role }: { role: 'citizen' | 'analyst' | 'authority' }) {
   const isOnline = useNetworkStatus();
@@ -13,10 +14,13 @@ export function MainLayout({ role }: { role: 'citizen' | 'analyst' | 'authority'
         <TopBar role={role} />
         <main id="main-content" tabIndex={-1} className="mx-auto w-full max-w-[1680px] p-4 pb-28 pt-7 outline-none sm:p-6 sm:pt-8 lg:p-8 lg:pb-8 xl:px-10">
           {!isOnline ? (
-            <div className="offline-strip mb-6 flex items-center gap-2 px-4 py-3 text-sm font-medium" role="status">
-              <WifiOff className="h-4 w-4 shrink-0" aria-hidden="true" />
-              Offline mode is active. New reports will be stored safely and sent when your connection returns.
-            </div>
+            <Alert variant="warning" className="mb-6 offline-strip">
+              <AlertIcon variant="warning" />
+              <div>
+                <AlertTitle>Offline mode is active</AlertTitle>
+                <AlertDescription>New reports will be stored safely and sent when your connection returns.</AlertDescription>
+              </div>
+            </Alert>
           ) : (
             <div className="status-strip mb-6 hidden w-fit items-center gap-2 px-3 py-2 font-mono text-[10px] uppercase tracking-[0.12em] lg:flex" role="status">
               <span className="h-2 w-2 rounded-full bg-primary" aria-hidden="true" />

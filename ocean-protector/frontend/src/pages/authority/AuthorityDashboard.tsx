@@ -1,6 +1,17 @@
 import { useQuery } from '@tanstack/react-query';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { StatCard } from '@/components/features/StatCard';
+import { DashboardCard } from '@/components/dashboard/DashboardCard';
+import { DashboardSection } from '@/components/dashboard/DashboardSection';
+import { AuthorityHero } from '@/components/dashboard/AuthorityHero';
+import { ResponseStats } from '@/components/dashboard/ResponseStats';
+import { TeamStatusCard } from '@/components/dashboard/TeamStatusCard';
+import { ResourceCard } from '@/components/dashboard/ResourceCard';
+import { QuickActionGrid } from '@/components/dashboard/QuickActionGrid';
+import { AlertPanel } from '@/components/dashboard/AlertPanel';
+import { OperationsFeed } from '@/components/dashboard/OperationsFeed';
+import { HeatmapPreview } from '@/components/dashboard/HeatmapPreview';
+import { EmptyState } from '@/components/layout/EmptyState';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -36,6 +47,8 @@ export function AuthorityDashboard() {
 
   const recentIncidents = incidents?.slice(0, 5) || [];
 
+  const criticalAlerts = incidents?.filter((i) => i.severity === 'critical').length ?? 0;
+
   const severityData = stats?.bySeverity.map(({ severity, count }) => ({
     name: severity.charAt(0).toUpperCase() + severity.slice(1),
     value: count,
@@ -49,46 +62,21 @@ export function AuthorityDashboard() {
 
   return (
     <div className="animate-fade-in space-y-6">
-      <PageHeader
-        title="Authority Dashboard"
-        description="Manage incidents, coordinate response teams, and monitor coastal safety"
-        icon={Shield}
-      />
+      <AuthorityHero activeIncidents={incidents?.length || 0} teamsDeployed={incidents?.filter(i => i.responseTeams?.length).length || 0} criticalAlerts={criticalAlerts} readiness={88} />
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-[1.35fr_1fr_1fr_1fr]">
-        <StatCard
-          label="Pending Reports"
-          value={stats?.underReview ?? 0}
-          icon={Clock}
-          color="amber"
-          trend="Needs attention"
-        />
-        <StatCard
-          label="Active Incidents"
-          value={recentIncidents.length}
-          icon={AlertTriangle}
-          color="orange"
-          trend="Live incidents"
-        />
-        <StatCard
-          label="Critical Incidents"
-          value={incidents?.filter((i) => i.severity === 'critical').length ?? 0}
-          icon={XCircle}
-          color="red"
-        />
-        <StatCard
-          label="Teams Deployed"
-          value={incidents?.filter((i) => i.responseTeams?.some(t => t.status === 'deployed')).length ?? 0}
-          icon={Users}
-          color="blue"
-        />
-      </div>
+      <DashboardSection title="Operations overview" description="Response and incident metrics">
+        <ResponseStats stats={[
+          { label: 'Pending Reports', value: stats?.underReview ?? 0, icon: Clock, trend: 'Needs attention' },
+          { label: 'Active Incidents', value: recentIncidents.length, icon: AlertTriangle },
+          { label: 'Critical Incidents', value: incidents?.filter((i) => i.severity === 'critical').length ?? 0, icon: XCircle },
+          { label: 'Teams Deployed', value: incidents?.filter((i) => i.responseTeams?.some((t: any) => t.status === 'deployed')).length ?? 0, icon: Users },
+        ]} />
+      </DashboardSection>
 
       {/* Charts Row */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {/* Severity Distribution */}
-        <Card>
+        <Card className="rounded-xl bg-gradient-to-br from-white/4 to-white/2">
           <CardHeader>
             <CardTitle>Current incident severity</CardTitle>
           </CardHeader>
@@ -96,6 +84,12 @@ export function AuthorityDashboard() {
             {severityData.length > 0 ? (
               <ResponsiveContainer width="100%" height={250}>
                 <PieChart>
+                  <defs>
+                    <linearGradient id="pieGradA" x1="0%" x2="100%">
+                      <stop offset="0%" stopColor="#06b6d4" />
+                      <stop offset="100%" stopColor="#7c3aed" />
+                    </linearGradient>
+                  </defs>
                   <Pie
                     data={severityData}
                     dataKey="value"
@@ -109,25 +103,24 @@ export function AuthorityDashboard() {
                       <Cell key={i} fill={entry.color} />
                     ))}
                   </Pie>
-                  <Tooltip
-                    contentStyle={{
-                      background: 'var(--color-paper-3)',
-                      border: '1px solid var(--color-rule)',
-                      borderRadius: '8px',
-                    }}
-                  />
+                  <Tooltip wrapperStyle={{ outline: 'none' }} contentStyle={{ background: 'var(--color-paper-3)', border: '1px solid var(--color-rule)', borderRadius: '8px' }} />
                 </PieChart>
               </ResponsiveContainer>
             ) : (
-              <div className="flex h-[250px] items-center justify-center text-sm text-slate-400">
-                No data available
+              <div className="h-[250px] py-4">
+                <EmptyState
+                  icon={AlertTriangle}
+                  title="No severity data"
+                  description="Severity distribution will appear once incident metrics are available."
+                  className="h-full"
+                />
               </div>
             )}
           </CardContent>
         </Card>
 
         {/* Hazard Types */}
-        <Card>
+        <Card className="rounded-xl bg-gradient-to-br from-white/4 to-white/2">
           <CardHeader>
             <CardTitle>Response demand by hazard type</CardTitle>
           </CardHeader>
@@ -155,8 +148,13 @@ export function AuthorityDashboard() {
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="flex h-[250px] items-center justify-center text-sm text-slate-400">
-                No data available
+              <div className="h-[250px] py-4">
+                <EmptyState
+                  icon={MapIcon}
+                  title="No hazard demand data"
+                  description="Hazard demand distribution will be shown when reports are available."
+                  className="h-full"
+                />
               </div>
             )}
           </CardContent>
@@ -164,7 +162,9 @@ export function AuthorityDashboard() {
       </div>
 
       {/* Active Incidents */}
-      <Card>
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
@@ -223,7 +223,37 @@ export function AuthorityDashboard() {
             </div>
           )}
         </CardContent>
-      </Card>
+          </Card>
+        </div>
+
+        <div>
+          <div className="space-y-3">
+            <div>
+              <h3 className="text-sm font-semibold">Team status</h3>
+              <div className="mt-3 grid grid-cols-1 gap-3">
+                {(incidents || []).slice(0,3).map((inc:any, idx:number) => (
+                  <TeamStatusCard key={idx} team={{ name: inc.responseTeams?.[0]?.name || 'Team', status: inc.responseTeams?.[0]?.status || 'available', assignment: inc.title, personnel: inc.responseTeams?.[0]?.personnelCount || 0, vehicles: inc.responseTeams?.[0]?.vehicleCount || 0 }} />
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <h3 className="text-sm font-semibold">Resources</h3>
+              <div className="mt-3 grid grid-cols-1 gap-3">
+                <ResourceCard resource={{ name: 'Rescue boats', type: 'Boats', available: 4, total: 6 }} />
+                <ResourceCard resource={{ name: 'Medical units', type: 'Units', available: 2, total: 3 }} />
+              </div>
+            </div>
+
+            <div>
+              <h3 className="text-sm font-semibold">Alerts</h3>
+              <div className="mt-3">
+                <AlertPanel alerts={(incidents || []).filter((i:any)=> i.severity === 'critical').map((i:any)=>({ id: i.id, title: i.title, region: i.location?.districtName, time: i.createdAt, severity: i.severity }))} />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Response Timeline */}
       {recentIncidents[0] && (
