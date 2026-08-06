@@ -19,6 +19,7 @@ export function TopBar({ role }: { role: 'citizen' | 'analyst' | 'authority' }) 
   const [notifOpen, setNotifOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const [searchFocused, setSearchFocused] = useState(false);
 
   return (
     <motion.header
@@ -55,7 +56,11 @@ export function TopBar({ role }: { role: 'citizen' | 'analyst' | 'authority' }) 
 
       {/* Search */}
       <div className="mx-2 flex flex-1 items-center">
-        <div className="relative w-full max-w-[720px]">
+        <motion.div
+          animate={{ maxWidth: searchFocused ? 760 : 720 }}
+          transition={{ duration: 0.24, ease: [0.2, 0.8, 0.2, 1] }}
+          className="relative w-full"
+        >
           <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
             <Search className="h-4 w-4" aria-hidden />
           </div>
@@ -63,13 +68,15 @@ export function TopBar({ role }: { role: 'citizen' | 'analyst' | 'authority' }) 
             type="search"
             aria-label="Search reports and incidents"
             placeholder="Search (Ctrl + K)"
+            onFocus={() => setSearchFocused(true)}
+            onBlur={() => setSearchFocused(false)}
             className="field-control pl-10 pr-28 h-10 w-full rounded-lg bg-transparent border border-transparent focus-visible:ring-2 focus-visible:ring-primary/30"
           />
           <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
             <kbd className="rounded-md bg-muted px-2 py-1 text-[11px] font-mono">Ctrl</kbd>
             <kbd className="rounded-md bg-muted px-2 py-1 text-[11px] font-mono">K</kbd>
           </div>
-        </div>
+        </motion.div>
       </div>
 
       <div className="flex items-center gap-2">
@@ -168,9 +175,9 @@ export function TopBar({ role }: { role: 'citizen' | 'analyst' | 'authority' }) 
           <AnimatePresence>
             {profileOpen && (
               <motion.div
-                initial={{ opacity: 0, y: -6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
+                initial={{ opacity: 0, y: -8, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -8, scale: 0.98 }}
                 transition={{ duration: 0.22 }}
                 className="absolute right-0 mt-2 w-48 rounded-lg bg-paper-3 border border-color-rule p-3 shadow-menu z-50"
                 role="menu"
