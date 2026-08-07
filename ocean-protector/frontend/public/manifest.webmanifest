@@ -1,0 +1,17 @@
+{
+  "name": "Kadalkavach — Coastal Hazard Intelligence",
+  "short_name": "Kadalkavach",
+  "description": "Coastal hazard reporting and emergency response platform for South India.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#03141f",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

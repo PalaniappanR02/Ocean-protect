@@ -20,7 +20,14 @@ const envSchema = z.object({
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
   CLOUDINARY_CLOUD_NAME: z.string().min(1),
   CLOUDINARY_API_KEY: z.string().min(1),
-  CLOUDINARY_API_SECRET: z.string().min(1), 
+  CLOUDINARY_API_SECRET: z.string().min(1),
+  // Optional integrations — the app runs fine without these; status endpoints
+  // report them as unconfigured and the features fail closed.
+  TWILIO_ACCOUNT_SID: z.string().optional().default(''),
+  TWILIO_AUTH_TOKEN: z.string().optional().default(''),
+  TWILIO_FROM_NUMBER: z.string().optional().default(''),
+  VAPI_API_KEY: z.string().optional().default(''),
+  INCOIS_FEED_URL: z.string().optional().default(''),
 });
 
 const parsed = envSchema.safeParse(process.env);

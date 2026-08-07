@@ -157,6 +157,14 @@
     opacity: 1;
   }
 
+  /* Floating-label fields hide the native placeholder entirely so the
+     floating label never renders as a duplicate/ghosted copy. */
+  .field-control.placeholder-transparent::placeholder,
+  .glass-input.placeholder-transparent::placeholder {
+    color: transparent !important;
+    opacity: 0;
+  }
+
   .field-control:focus-visible,
   .glass-input:focus-visible,
   .field-control:focus,
@@ -1051,5 +1059,66 @@
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+/* ============================================================
+   Public landing & site chrome
+   ============================================================ */
+.public-nav {
+  border-bottom: 1px solid color-mix(in oklch, var(--color-ink) 8%, transparent);
+  background: color-mix(in oklch, var(--color-paper) 82%, transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.public-nav-link {
+  position: relative;
+}
+
+.public-nav-link::after {
+  content: "";
+  position: absolute;
+  left: 0.75rem;
+  right: 0.75rem;
+  bottom: 0.35rem;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 180ms var(--ease-out);
+}
+
+.public-nav-link:hover::after,
+.public-nav-link:focus-visible::after {
+  transform: scaleX(1);
+}
+
+.landing-hero {
+  background:
+    radial-gradient(120% 90% at 85% -10%, rgba(34, 211, 238, 0.14), transparent 55%),
+    radial-gradient(90% 80% at 0% 110%, rgba(37, 99, 235, 0.16), transparent 55%),
+    #03141f;
+}
+
+.landing-display {
+  font-variation-settings: "wght" 650;
+  letter-spacing: -0.04em;
+  text-wrap: balance;
+}
+
+.landing-wave {
+  transform-origin: bottom;
+  animation: wave-drift 14s ease-in-out infinite alternate;
+}
+
+@keyframes wave-drift {
+  from { transform: scaleY(0.92) translateY(0); }
+  to { transform: scaleY(1.08) translateY(6px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-wave {
+    animation: none;
   }
 }

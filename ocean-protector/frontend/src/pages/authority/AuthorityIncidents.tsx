@@ -1,5 +1,6 @@
 import { /* useState removed - declared later with useMemo */ } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useRealtime } from '@/hooks/useRealtime';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -26,6 +27,7 @@ const STATUS_FILTERS: { value: IncidentStatus | 'all'; label: string; icon: any 
 ];
 
 export function AuthorityIncidents() {
+  useRealtime();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<IncidentStatus | 'all'>('all');
   const [page, setPage] = useState(1);

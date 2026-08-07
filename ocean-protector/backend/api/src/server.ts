@@ -9,7 +9,7 @@ const server = http.createServer(app);
 export const io = initSocketServer(server);
 
 server.listen(env.PORT, () => {
-  console.log(`🚀 OceanGuard API running on http://localhost:${env.PORT}`);
+  console.log(`🚀 Kadalkavach API running on http://localhost:${env.PORT}`);
 });
 
 process.on('SIGTERM', () => {

@@ -14,10 +14,11 @@ interface MapShellProps {
   reports?: any[];
   incidents?: any[];
   regions?: any[];
+  hotspots?: any[];
   className?: string;
 }
 
-export const MapShell: React.FC<MapShellProps> = ({ reports = [], incidents = [], regions = [], className }) => {
+export const MapShell: React.FC<MapShellProps> = ({ reports = [], incidents = [], regions = [], hotspots = [], className }) => {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [selected, setSelected] = useState<any | null>(null);
 
@@ -28,6 +29,7 @@ export const MapShell: React.FC<MapShellProps> = ({ reports = [], incidents = []
           reports={reports}
           incidents={incidents}
           regions={regions}
+          hotspots={hotspots}
           onMarkerClick={(id: string) => {
             const s = incidents.find((i: any) => i.id === id) || reports.find((r: any) => r.id === id);
             setSelected(s || null);

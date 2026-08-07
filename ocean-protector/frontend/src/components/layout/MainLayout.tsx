@@ -1,11 +1,13 @@
 import { Outlet } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
+import { Breadcrumbs } from '@/components/navigation/Breadcrumbs';
 import { useNetworkStatus } from '@/hooks/useNetworkStatus';
 import { Wifi } from 'lucide-react';
 import { Alert, AlertDescription, AlertIcon, AlertTitle } from '@/components/ui/alert';
+import type { PortalRole } from '@/navigation/navigation.types';
 
-export function MainLayout({ role }: { role: 'citizen' | 'analyst' | 'authority' }) {
+export function MainLayout({ role }: { role: PortalRole }) {
   const isOnline = useNetworkStatus();
   return (
     <div className="min-h-screen bg-transparent" data-portal={role} data-theme="aurora">
@@ -28,9 +30,10 @@ export function MainLayout({ role }: { role: 'citizen' | 'analyst' | 'authority'
               Connected · live coastal data
             </div>
           )}
+          <Breadcrumbs />
           <Outlet />
-          <footer className="portal-footer" aria-label="OceanGuard information">
-            <span>OceanGuard · South India coastal safety</span>
+          <footer className="portal-footer" aria-label="Kadalkavach information">
+            <span>Kadalkavach · South India coastal safety</span>
             <span>Citizen reports · analyst verification · authority response</span>
           </footer>
         </main>

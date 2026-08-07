@@ -2,10 +2,10 @@ import { pool } from '../../database/pool';
 import { IncidentRecord, ResponseTeamRecord } from './incident.types';
 
 const VALID_INCIDENT_TRANSITIONS: Record<string, string[]> = {
-  'candidate': ['under_review', 'cancelled'],
+  'candidate': ['under_review', 'verified', 'cancelled'],
   'under_review': ['verified', 'cancelled'],
-  'verified': ['assigned', 'cancelled'],
-  'assigned': ['responding', 'monitoring'],
+  'verified': ['assigned', 'cancelled', 'resolved'],
+  'assigned': ['responding', 'monitoring', 'resolved'],
   'responding': ['monitoring', 'resolved'],
   'monitoring': ['resolved'],
   'resolved': [],
@@ -88,8 +88,8 @@ export const findAllIncidents = async (filters: any): Promise<{ incidents: Incid
   let where = ['1=1'];
   const params: any[] = [];
   
-  if (filters.status) { params.push(filters.status); where.push(`status = $${params.length}`); }
-  if (filters.stateCode) { params.push(filters.stateCode); where.push(`state_code = $${params.length}`); }
+  if (filters.status) { params.push(String(filters.status)); where.push(`status::text = ANY(string_to_array($${params.length}::text, ','))`); }
+  if (filters.stateCode) { params.push(String(filters.stateCode)); where.push(`state_code = ANY(string_to_array($${params.length}::text, ','))`); }
   if (filters.isPublic !== undefined) { params.push(filters.isPublic); where.push(`is_public = $${params.length}`); }
 
   const whereClause = where.join(' AND ');
@@ -138,12 +138,12 @@ export const updateIncidentStatus = async (incidentId: string, newStatus: string
 
     await client.query(`
       UPDATE incidents 
-      SET status = $1, updated_at = CURRENT_TIMESTAMP, 
+      SET status = $1::incident_status_enum, updated_at = CURRENT_TIMESTAMP, 
           verified_at = COALESCE($2, verified_at), 
           verified_by = COALESCE($3, verified_by), 
           resolved_at = COALESCE($4, resolved_at),
-          is_public = CASE WHEN $1 = 'verified' THEN true ELSE is_public END
-      WHERE id = $5
+          is_public = CASE WHEN $1::incident_status_enum = 'verified' THEN true ELSE is_public END
+      WHERE id = $5::uuid
     `, [newStatus, verifiedAt, verifiedBy, resolvedAt, incidentId]);
 
     await client.query(`

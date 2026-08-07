@@ -14,6 +14,7 @@ import {
 import { mapReportToResponse } from './report.mapper';
 import { createReportSchema, reportQuerySchema, updateReportStatusSchema } from './report.schema';
 import { NotFoundError } from '../../common/errors/AppError';
+import type { AuthedRequest } from '../../common/middleware/auth';
 
 export const createReport = async (req: Request, res: Response) => {
   const candidate = {
@@ -21,7 +22,8 @@ export const createReport = async (req: Request, res: Response) => {
     clientReportId: req.body.clientReportId ?? req.headers['idempotency-key'],
   };
   const validated = createReportSchema.parse(candidate);
-  const { report, duplicatePrevented } = await createReportService(validated);
+  const reporterUserId = (req as AuthedRequest).user?.id ?? null;
+  const { report, duplicatePrevented } = await createReportService(validated, reporterUserId);
 
   res.status(duplicatePrevented ? 200 : 201).json({
     success: true,
@@ -33,6 +35,23 @@ export const createReport = async (req: Request, res: Response) => {
 export const getReports = async (req: Request, res: Response) => {
   const filters = reportQuerySchema.parse(req.query);
   const { reports, total } = await findAllReports(filters);
+
+  res.json({
+    success: true,
+    data: reports.map((report) => mapReportToResponse(report)),
+    meta: {
+      page: filters.page,
+      limit: filters.limit,
+      total,
+      totalPages: Math.max(1, Math.ceil(total / filters.limit)),
+    },
+  });
+};
+
+export const getMyReports = async (req: Request, res: Response) => {
+  const filters = reportQuerySchema.parse(req.query);
+  const userId = (req as AuthedRequest).user!.id;
+  const { reports, total } = await findAllReports(filters, userId);
 
   res.json({
     success: true,

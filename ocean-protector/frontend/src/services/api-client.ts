@@ -24,13 +24,15 @@ export async function apiFetch<T>(path: string, options: RequestOptions = {}): P
   const {
     data: { session },
   } = await supabase.auth.getSession();
-  const authHeader = session?.access_token
-    ? { Authorization: `Bearer ${session.access_token}` }
-    : {};
+  const requestHeaders: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+    ...headers,
+  };
 
   const response = await fetch(`${API_URL}${path}`, {
     method,
-    headers: { 'Content-Type': 'application/json', ...authHeader, ...headers },
+    headers: requestHeaders,
     body: body === undefined ? undefined : JSON.stringify(body),
     signal,
   });

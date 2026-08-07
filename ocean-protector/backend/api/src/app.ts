@@ -16,6 +16,10 @@ import dashboardRoutes from './modules/dashboard/dashboard.routes';
 import socialRoutes from './modules/social-signals/social.routes';
 import incidentRoutes from './modules/incidents/incident.routes';
 import publicRoutes from './modules/public/public.routes';
+import authRoutes from './modules/auth/auth.routes';
+import alertRoutes from './modules/alerts/alert.routes';
+import notificationRoutes from './modules/notifications/notification.routes';
+import integrationRoutes from './modules/integrations/integration.routes';
 import logger from './common/utils/logger';
 import { normaliseBrowserOrigin } from './config/urls';
 
@@ -79,7 +83,7 @@ export const createApp = () => {
   app.use('/uploads', express.static(path.resolve(__dirname, '../uploads')));
 
   app.get('/', (req: Request, res: Response) => {
-    res.status(200).json({ success: true, data: { message: 'OceanGuard API' } });
+    res.status(200).json({ success: true, data: { message: 'Kadalkavach API' } });
   });
 
   app.use('/health', healthRoutes);
@@ -91,6 +95,10 @@ export const createApp = () => {
   app.use('/api/v1/social-signals', socialRoutes);
   app.use('/api/v1/incidents', incidentRoutes);
   app.use('/api/v1/public', publicRoutes);
+  app.use('/api/v1/auth', authRoutes);
+  app.use('/api/v1/alerts', alertRoutes);
+  app.use('/api/v1/notifications', notificationRoutes);
+  app.use('/api/v1/integrations', integrationRoutes);
 
   app.use(notFoundHandler);
   app.use(errorHandler);

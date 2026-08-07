@@ -11,6 +11,7 @@
     "test:watch": "vitest",
     "migrate": "tsx src/database/migrate.ts",
     "migrate:prod": "node dist/database/migrate.js",
+    "seed:demo": "tsx src/scripts/seed-demo-users.ts",
     "start:render": "npm run migrate:prod && npm start"
   },
   "dependencies": {

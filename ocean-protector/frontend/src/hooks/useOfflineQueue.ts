@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { db, type DraftReport } from '@/lib/db';
 import { reportService } from '@/services';
+import { mediaService } from '@/services/media-service';
 import { useNetworkStatus } from './useNetworkStatus';
 import { useToast } from './useToast';
 import type { OfflineQueueItem, HazardReport } from '@/types';
@@ -107,6 +108,25 @@ export function useOfflineQueue() {
       });
 
       try {
+        // Upload any media blobs captured while offline, then link their URLs.
+        // Geotag synced evidence with the report's captured location.
+        const reportGeotag = item.latitude !== undefined && item.longitude !== undefined
+          ? { latitude: item.latitude, longitude: item.longitude }
+          : undefined;
+        const uploadedMedia: Array<{ url: string; filename: string; contentType: string; size: number; latitude?: number; longitude?: number }> = [
+          ...item.mediaUrls.map((m) => ({ url: m.url, filename: m.filename, contentType: m.contentType, size: m.size, latitude: reportGeotag?.latitude, longitude: reportGeotag?.longitude })),
+        ];
+        if (item.mediaFiles?.length) {
+          for (const mf of item.mediaFiles) {
+            try {
+              const result = await mediaService.upload(mf.data instanceof File ? mf.data : new File([mf.data], mf.name, { type: mf.type }), reportGeotag);
+              uploadedMedia.push({ url: result.url, filename: mf.name, contentType: result.contentType || mf.type, size: result.size || mf.size, latitude: reportGeotag?.latitude, longitude: reportGeotag?.longitude });
+            } catch (error) {
+              console.error('Offline media upload failed for', mf.name, error);
+            }
+          }
+        }
+
         const response = await reportService.create({
           clientReportId: item.clientReportId,
           hazardType: item.hazardType as any,
@@ -124,12 +144,7 @@ export function useOfflineQueue() {
           districtName: item.districtName,
           observedAt: item.observedAt,
           receivedAt: item.receivedAt,
-          mediaUrls: item.mediaUrls.map((m) => ({
-            url: m.url,
-            filename: m.filename,
-            contentType: m.contentType,
-            size: m.size,
-          })),
+          mediaUrls: uploadedMedia,
         });
 
         // Mark as synced

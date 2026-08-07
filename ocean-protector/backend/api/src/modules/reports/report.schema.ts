@@ -19,7 +19,16 @@ export const createReportSchema = z.object({
   locationSource: z.enum(['device_gps', 'manual', 'map_pin']).default('device_gps'),
   observedAt: z.string().datetime(),
   severity: z.enum(['low', 'advisory', 'warning', 'critical']).default('advisory'),
-  mediaUrls: z.array(z.string().url()).optional().default([]),
+  mediaUrls: z.array(
+    z.union([
+      z.string().url(),
+      z.object({
+        url: z.string().url(),
+        latitude: z.number().min(-90).max(90).optional(),
+        longitude: z.number().min(-180).max(180).optional(),
+      }),
+    ]),
+  ).optional().default([]),
 });
 
 export const updateReportStatusSchema = z.object({

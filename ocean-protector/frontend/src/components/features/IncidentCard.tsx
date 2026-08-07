@@ -12,12 +12,9 @@ interface IncidentCardProps {
 }
 
 export function IncidentCard({ incident, to }: IncidentCardProps) {
-  const link = to || `/authority/incidents/${incident.id}`;
   const hazardLabel = HAZARD_TYPE_LABELS[incident.hazardType];
-
-  return (
-    <Link to={link}>
-      <Card className="interactive-card group">
+  const body = (
+    <Card className="interactive-card group">
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between gap-2">
             <div className="flex items-center gap-2">
@@ -56,7 +53,11 @@ export function IncidentCard({ incident, to }: IncidentCardProps) {
             )}
           </div>
         </CardContent>
-      </Card>
-    </Link>
+    </Card>
   );
+
+  // Cards are only links when a destination is explicitly provided (the old
+  // default pointed analysts into the authority portal, which their role can't
+  // open — and analysts have no incident-detail route of their own).
+  return to ? <Link to={to}>{body}</Link> : body;
 }

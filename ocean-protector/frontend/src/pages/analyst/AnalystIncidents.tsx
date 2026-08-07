@@ -13,14 +13,6 @@ export function AnalystIncidents() {
     queryFn: () => incidentService.list({}),
   });
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-ocean-500 border-t-transparent" />
-      </div>
-    );
-  }
-
   const [search, setSearch] = useState('');
 
   const activeIncidents = useMemo(() => (incidents || []).filter((i) => !['resolved', 'cancelled'].includes(i.status)), [incidents]);
@@ -37,6 +29,14 @@ export function AnalystIncidents() {
     if (!q) return resolvedIncidents;
     return resolvedIncidents.filter(i => (i.title||'').toLowerCase().includes(q) || (i.description||'').toLowerCase().includes(q) || (i.location?.districtName||'').toLowerCase().includes(q));
   }, [resolvedIncidents, search]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-ocean-500 border-t-transparent" />
+      </div>
+    );
+  }
 
   return (
     <div className="animate-fade-in">
@@ -56,7 +56,7 @@ export function AnalystIncidents() {
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             {filteredActive.map((i) => (
               <div key={i.id} className="glass-panel p-3">
-                <IncidentCard incident={i} to={`/authority/incidents/${i.id}`} />
+                <IncidentCard incident={i} />
               </div>
             ))}
           </div>
@@ -69,7 +69,7 @@ export function AnalystIncidents() {
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             {filteredResolved.map((i) => (
               <div key={i.id} className="glass-panel p-3">
-                <IncidentCard incident={i} to={`/authority/incidents/${i.id}`} />
+                <IncidentCard incident={i} />
               </div>
             ))}
           </div>

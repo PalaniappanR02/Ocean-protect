@@ -100,3 +100,68 @@
   --z-overlay: 40;
   --z-toast: 50;
 }
+
+/* Dark theme — same token set, night values. The `dark` class is applied by
+   next-themes on <html>, so every semantic Tailwind color flips with it. The
+   app shell also carries data-theme="aurora" (a legacy light-theme marker);
+   `.dark [data-theme="aurora"]` ensures the dark variables win there too. */
+.dark,
+.dark [data-theme="aurora"] {
+  color-scheme: dark;
+
+  --color-paper: oklch(15% 0.02 200);
+  --color-paper-2: oklch(17.5% 0.022 200);
+  --color-paper-3: oklch(20% 0.024 200);
+  --color-paper-raised: oklch(23.5% 0.026 200);
+  --color-rule: oklch(27% 0.03 200);
+  --color-rule-2: oklch(36% 0.03 200);
+  --color-muted: oklch(66% 0.022 200);
+  --color-neutral: oklch(74% 0.018 200);
+  --color-ink-2: oklch(82% 0.014 200);
+  --color-ink: oklch(93% 0.008 200);
+  --color-accent: oklch(78% 0.11 200);
+  --color-accent-strong: oklch(70% 0.12 200);
+  --color-accent-ink: oklch(13% 0.03 200);
+  --color-accent-2: oklch(74% 0.1 175);
+  --color-accent-soft: oklch(22% 0.03 200);
+  --color-focus: oklch(80% 0.13 220);
+  --color-focus-contrast: oklch(12% 0.02 200);
+
+  --color-danger: oklch(64% 0.17 25);
+  --color-danger-ink: oklch(14% 0.03 25);
+  --color-danger-text: oklch(76% 0.13 25);
+  --color-danger-soft: oklch(25% 0.04 25);
+  --color-warning: oklch(80% 0.12 78);
+  --color-warning-ink: oklch(14% 0.03 78);
+  --color-warning-soft: oklch(26% 0.04 78);
+  --color-success: oklch(72% 0.12 155);
+  --color-success-ink: oklch(14% 0.03 155);
+  --color-success-soft: oklch(24% 0.04 155);
+  --color-info-soft: oklch(24% 0.04 240);
+  --color-overlay: oklch(7% 0.02 200 / 0.84);
+  --color-bloom-one: oklch(80% 0.05 200 / 0.08);
+  --color-bloom-two: oklch(84% 0.04 175 / 0.07);
+
+  /* Tailwind semantic colour channels. */
+  --background: 15% 0.02 200;
+  --foreground: 93% 0.008 200;
+  --card: 17.5% 0.022 200;
+  --card-foreground: 93% 0.008 200;
+  --popover: 15% 0.02 200;
+  --popover-foreground: 93% 0.008 200;
+  --primary: 78% 0.11 200;
+  --primary-foreground: 13% 0.03 200;
+  --secondary: 20% 0.024 200;
+  --secondary-foreground: 93% 0.008 200;
+  --muted: 20% 0.024 200;
+  --muted-foreground: 66% 0.022 200;
+  --accent: 74% 0.1 175;
+  --accent-foreground: 13% 0.03 200;
+  --destructive: 64% 0.17 25;
+  --destructive-foreground: 14% 0.03 25;
+  --border: 27% 0.03 200;
+  --input: 36% 0.03 200;
+  --ring: 80% 0.13 220;
+
+  --shadow-menu: 0 1rem 2.5rem -1rem oklch(4% 0.02 200 / 0.6);
+}

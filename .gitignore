@@ -1,0 +1,5 @@
+# Freebuff desktop tooling + local databases (never publish)
+.freebuff/
+desktop-v2.db
+desktop-v2.db-shm
+desktop-v2.db-wal

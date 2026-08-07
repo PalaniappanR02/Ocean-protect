@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { StatCard } from '@/components/features/StatCard';
 import { DashboardCard } from '@/components/dashboard/DashboardCard';
@@ -14,14 +14,16 @@ import { SafetyOverviewCard } from '@/components/citizen/SafetyOverviewCard';
 import { MapPreview } from '@/components/citizen/MapPreview';
 import { SafetyTipCard } from '@/components/citizen/SafetyTipCard';
 import { CommunityCard } from '@/components/citizen/CommunityCard';
-import { LoadingOverlay } from '@/components/ui/loading-overlay';
 import { alertService, reportService, incidentService } from '@/services';
+import { integrationService } from '@/services/integration-service';
+import { useRealtime } from '@/hooks/useRealtime';
 import {
   Activity,
   AlertTriangle,
   ArrowRight,
   Clock,
   FileWarning,
+  Loader2,
   Map,
   Phone,
   Radio,
@@ -32,6 +34,8 @@ import { useOfflineQueue } from '@/hooks/useOfflineQueue';
 import { useNetworkStatus } from '@/hooks/useNetworkStatus';
 
 export function CitizenDashboard() {
+  useRealtime();
+  const navigate = useNavigate();
   const { pendingCount, syncQueue, syncing } = useOfflineQueue();
   const isOnline = useNetworkStatus();
 
@@ -50,6 +54,12 @@ export function CitizenDashboard() {
     queryFn: () => incidentService.list({ status: ['verified', 'responding', 'monitoring'] }),
   });
 
+  const { data: integrations } = useQuery({
+    queryKey: ['integrations'],
+    queryFn: () => integrationService.status(),
+    refetchInterval: 120_000,
+  });
+
   const isDashboardLoading = loadingAlerts || loadingStats || loadingIncidents;
 
   const activeAlerts = alerts?.filter((alert) => alert.isActive) || [];
@@ -59,7 +69,15 @@ export function CitizenDashboard() {
 
   return (
     <div className="animate-fade-in relative">
-      {isDashboardLoading && <LoadingOverlay label="Refreshing coastal dashboard" />}
+      {/* Compact, non-blocking refresh indicator — no full-page blur. */}
+      {isDashboardLoading && (
+        <div role="status" aria-live="polite" className="pointer-events-none fixed left-1/2 top-20 z-40 -translate-x-1/2">
+          <div className="glass-panel flex items-center gap-2 rounded-full px-4 py-2 shadow-menu">
+            <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" aria-hidden="true" />
+            <span className="text-xs font-medium">Refreshing coastal dashboard</span>
+          </div>
+        </div>
+      )}
       <CitizenHero />
 
       <div className="mt-4 mb-6 flex items-center justify-between gap-4">
@@ -104,13 +122,48 @@ export function CitizenDashboard() {
 
       <DashboardSection title="Quick actions" description="Fast access to important tasks">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4">
-          <QuickActionCard Icon={FileWarning} label="Report Hazard" onActivate={() => window.location.assign('/citizen/report')} />
-          <QuickActionCard Icon={Map} label="Hazard Map" onActivate={() => window.location.assign('/citizen/map')} />
-          <QuickActionCard Icon={AlertTriangle} label="Safety Alerts" onActivate={() => window.location.assign('/citizen/alerts')} />
-          <QuickActionCard Icon={WifiOff} label="Offline Reports" onActivate={() => window.location.assign('/citizen/offline')} />
+          <QuickActionCard Icon={FileWarning} label="Report Hazard" onActivate={() => navigate('/citizen/report')} />
+          <QuickActionCard Icon={Map} label="Hazard Map" onActivate={() => navigate('/citizen/map')} />
+          <QuickActionCard Icon={AlertTriangle} label="Safety Alerts" onActivate={() => navigate('/citizen/alerts')} />
+          <QuickActionCard Icon={WifiOff} label="Offline Reports" onActivate={() => navigate('/citizen/offline')} />
           <QuickActionCard Icon={Phone} label="Emergency Contacts" onActivate={() => { /* placeholder */ }} />
           <QuickActionCard Icon={Activity} label="Marine Safety Tips" onActivate={() => { /* placeholder */ }} />
           <QuickActionCard Icon={Radio} label="Weather" onActivate={() => { /* placeholder */ }} />
+        </div>
+      </DashboardSection>
+
+      <DashboardSection title="Coastal integrations" description="Early-warning and emergency-reporting channels connected to Kadalkavach">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <Card>
+            <CardContent className="flex items-start gap-4 p-5">
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-ocean-400/10">
+                <Phone className="h-5 w-5 text-ocean-400" aria-hidden="true" />
+              </span>
+              <div className="min-w-0">
+                <h3 className="text-sm font-semibold">Emergency voice reporting</h3>
+                <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                  {integrations?.voice?.twilio?.configured || integrations?.voice?.vapi?.configured
+                    ? 'Voice report lines are active through the configured provider.'
+                    : 'Voice reporting is ready in the platform — an operator enables it by connecting Twilio or VAPI.'}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="flex items-start gap-4 p-5">
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-ocean-400/10">
+                <Radio className="h-5 w-5 text-ocean-400" aria-hidden="true" />
+              </span>
+              <div className="min-w-0">
+                <h3 className="text-sm font-semibold">INCOIS early warnings</h3>
+                <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                  {integrations?.incois?.configured
+                    ? 'Official INCOIS bulletins are connected.'
+                    : 'Official INCOIS bulletins appear here once the warning feed is connected.'}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </DashboardSection>
 

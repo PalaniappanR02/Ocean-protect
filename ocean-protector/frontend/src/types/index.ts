@@ -19,6 +19,9 @@ export interface MediaUrl {
   contentType: string;
   size: number;
   uploadedAt?: string;
+  /** GPS coordinates captured with the photo/video (geotagged evidence). */
+  latitude?: number;
+  longitude?: number;
 }
 
 export interface ConfidenceFactor {
@@ -75,7 +78,7 @@ export interface HazardReport {
 
 export interface SocialSignal {
   id: string;
-  platform: 'twitter' | 'instagram' | 'facebook';
+  platform: 'twitter' | 'instagram' | 'facebook' | 'reddit' | 'youtube' | 'news';
   postId: string;
   authorUsername: string;
   authorDisplayName: string;
@@ -94,11 +97,14 @@ export interface SocialSignal {
   relevanceScore: number;
   urgencyScore: number;
   sentimentScore: number;
+  engagementScore?: number;
+  misinfoScore?: number;
   keywordsMatched: string[];
   supportedByImages?: boolean;
   classifierVersion?: string;
   analysisMode?: AnalysisMode;
   isMock: boolean;
+  reviewStatus?: 'pending' | 'confirmed' | 'dismissed';
   matchedIncidentId?: string;
   matchedReportId?: string;
   relatedIncidentId?: string;
@@ -283,6 +289,8 @@ export interface OfflineQueueItem {
   observedAt: string;
   receivedAt: string;
   mediaUrls: MediaUrl[];
+  /** Raw media blobs captured offline; uploaded to the secure provider during sync. */
+  mediaFiles?: Array<{ name: string; type: string; size: number; data: Blob }>;
   state: 'saved_offline' | 'waiting_for_signal' | 'syncing' | 'synced' | 'sync_failed';
   syncAttempts: number;
   lastSyncAttemptAt?: string;

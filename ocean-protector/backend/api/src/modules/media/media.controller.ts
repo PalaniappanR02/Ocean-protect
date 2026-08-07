@@ -9,11 +9,11 @@ export const uploadMedia = (req: Request, res: Response) => {
   }
 
   if (!ALLOWED_MIME_TYPES.includes(req.file.mimetype)) {
-    throw new ValidationError('Invalid file type. Only JPEG, PNG, and WebP are allowed.');
+    throw new ValidationError('Invalid file type. Only JPEG, PNG, WebP, MP4 and WebM are allowed.');
   }
 
   if (req.file.size > MAX_FILE_SIZE_BYTES) {
-    throw new ValidationError('File size exceeds 8MB limit.');
+    throw new ValidationError('File size exceeds 50MB limit.');
   }
 
   const uploadStream = cloudinary.uploader.upload_stream(

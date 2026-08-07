@@ -14,6 +14,8 @@ import { ResponseTimeline } from '@/components/features/ResponseTimeline';
 import { ResponseTeamCard } from '@/components/features/ResponseTeamCard';
 import { EvidenceCard } from '@/components/features/ReportCard';
 import { incidentService } from '@/services';
+import { useAuth } from '@/hooks/useAuth';
+import { hasSupervisorAccess } from '@/navigation/route-access';
 import { HAZARD_TYPE_LABELS, INCIDENT_STATUS_OPTIONS } from '@/types';
 import type { IncidentStatus, ResponseTeamType, ResponseTeamMember } from '@/types';
 import { useToast } from '@/hooks/useToast';
@@ -27,6 +29,8 @@ export function AuthorityIncidentDetail() {
   const { incidentId } = useParams<{ incidentId: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { role } = useAuth();
+  const isSupervisor = hasSupervisorAccess(role);
   const queryClient = useQueryClient();
 
   const [analystNotes, setAnalystNotes] = useState('');
@@ -129,7 +133,7 @@ export function AuthorityIncidentDetail() {
             Mark as Monitoring
           </Button>
         )}
-        {incident.status === 'monitoring' && (
+        {incident.status === 'monitoring' && isSupervisor && (
           <Button
             variant="success"
             onClick={() => updateStatusMutation.mutate('resolved')}
@@ -272,13 +276,19 @@ export function AuthorityIncidentDetail() {
                   rows={4}
                 />
               </div>
-              <Button
-                onClick={() => verifyMutation.mutate()}
-                disabled={verifyMutation.isPending || !analystNotes.trim()}
-              >
-                <CheckCircle className="mr-2 h-4 w-4" />
-                Verify & Publish Incident
-              </Button>
+              {isSupervisor ? (
+                <Button
+                  onClick={() => verifyMutation.mutate()}
+                  disabled={verifyMutation.isPending || !analystNotes.trim()}
+                >
+                  <CheckCircle className="mr-2 h-4 w-4" />
+                  Verify & Publish Incident
+                </Button>
+              ) : (
+                <p className="rounded-lg border border-dashed px-3 py-2.5 text-xs text-slate-500">
+                  Verification and publishing are restricted to authority supervisors. You can prepare notes here for the supervisor&rsquo;s review.
+                </p>
+              )}
             </CardContent>
           </Card>
         </div>

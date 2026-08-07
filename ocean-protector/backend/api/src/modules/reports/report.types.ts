@@ -16,6 +16,14 @@ export interface NearbyReportMatch {
   isClusterCandidate: boolean;
 }
 
+export interface ReportMediaRecord {
+  url: string;
+  mimeType: string;
+  size: number;
+  latitude?: number | null;
+  longitude?: number | null;
+}
+
 export interface ReportRecord {
   id: string;
   clientReportId: string;
@@ -45,6 +53,7 @@ export interface ReportRecord {
   analysisMode: string;
   isPublic: boolean;
   isSynthetic: boolean;
+  mediaUrls: ReportMediaRecord[];
   createdAt: string;
   updatedAt: string;
 }

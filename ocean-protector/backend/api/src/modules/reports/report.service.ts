@@ -5,6 +5,7 @@ import {
   findReportById,
   replaceConfidenceFactors,
   saveConfidenceFactors,
+  saveReportMedia,
   updateReportConfidence,
   updateReportStatus as updateReportStatusRecord,
 } from './report.repository';
@@ -12,9 +13,10 @@ import { findNearestRegion } from '../regions/region.repository';
 import { calculateConfidence, calculateFreshnessBand } from '../confidence/confidence.service';
 import { ConflictError, NotFoundError } from '../../common/errors/AppError';
 import { io } from '../../realtime/socket';
+import { createAuditEvent } from '../audit/audit.repository';
 import type { CreateReportInput } from './report.schema';
 
-export const createReportService = async (data: CreateReportInput) => {
+export const createReportService = async (data: CreateReportInput, reporterUserId?: string | null) => {
   const existing = await findReportByClientId(data.clientReportId);
   if (existing) return { report: existing, duplicatePrevented: true };
 
@@ -57,9 +59,21 @@ export const createReportService = async (data: CreateReportInput) => {
     score,
     freshnessBand,
     syncDelayMinutes,
+    reporterUserId,
   );
 
   await saveConfidenceFactors(report.id, factors);
+  await saveReportMedia(report.id, data.mediaUrls ?? []);
+  await createAuditEvent(
+    'report',
+    report.id,
+    'CREATED',
+    null,
+    { trackingId: report.trackingId, hazardType: report.hazardType },
+    'Citizen hazard report created.',
+    'citizen',
+    reporterUserId ?? 'anonymous',
+  );
   io?.emit('report.created', {
     reportId: report.id,
     trackingId: report.trackingId,
@@ -83,6 +97,16 @@ export const updateReportStatusService = async (
     const updated = await updateReportStatusRecord(
       reportId,
       newStatus,
+      reason,
+      actorType,
+      actorName,
+    );
+    await createAuditEvent(
+      'report',
+      reportId,
+      'STATUS_CHANGED',
+      { status: report.status },
+      { status: updated.status },
       reason,
       actorType,
       actorName,
@@ -117,6 +141,16 @@ export const recalculateReportConfidenceService = async (reportId: string) => {
   const updated = await updateReportConfidence(report.id, score, analysisMode);
   if (!updated) throw new NotFoundError('Report not found after recalculation');
 
+  await createAuditEvent(
+    'report',
+    reportId,
+    'CONFIDENCE_UPDATED',
+    { confidenceScore: report.confidenceScore },
+    { confidenceScore: updated.confidenceScore },
+    'Confidence score recalculated.',
+    'analyst',
+    'system',
+  );
   io?.emit('report.confidenceChanged', {
     reportId,
     confidenceScore: updated.confidenceScore,

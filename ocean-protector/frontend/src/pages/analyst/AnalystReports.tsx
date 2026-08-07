@@ -4,30 +4,37 @@ import { PageHeader } from '@/components/layout/PageHeader';
 import { ReportCard } from '@/components/features/ReportCard';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { reportService } from '@/services';
 import { EmptyState } from '@/components/layout/EmptyState';
 import { FileWarning, Search, Filter, X } from 'lucide-react';
 import SearchFilters from '@/components/list/SearchFilters';
+import { useRealtime } from '@/hooks/useRealtime';
 import type { ReportStatus, HazardType, Severity } from '@/types';
 import { REPORT_STATUS_LABELS, HAZARD_TYPE_LABELS, SEVERITY_LABELS, SEVERITY_ORDER } from '@/types';
 
 export function AnalystReports() {
+  useRealtime();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<ReportStatus[]>([]);
   const [hazardFilter, setHazardFilter] = useState<HazardType[]>([]);
   const [severityFilter, setSeverityFilter] = useState<Severity[]>([]);
+  const [stateFilter, setStateFilter] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
   const [page, setPage] = useState(1);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['reports', { search, statusFilter, hazardFilter, severityFilter, page }],
+    queryKey: ['reports', { search, statusFilter, hazardFilter, severityFilter, stateFilter, startDate, endDate, page }],
     queryFn: () => reportService.list(
       {
         search: search || undefined,
         status: statusFilter.length ? statusFilter : undefined,
         hazardType: hazardFilter.length ? hazardFilter : undefined,
         severity: severityFilter.length ? severityFilter : undefined,
+        stateCode: stateFilter ? [stateFilter] : undefined,
+        startDate: startDate || undefined,
+        endDate: endDate || undefined,
       },
       { page, pageSize: 12, sortBy: 'receivedAt', sortOrder: 'desc' }
     ),
@@ -53,10 +60,13 @@ export function AnalystReports() {
     setStatusFilter([]);
     setHazardFilter([]);
     setSeverityFilter([]);
+    setStateFilter('');
+    setStartDate('');
+    setEndDate('');
     setPage(1);
   };
 
-  const hasFilters = search || statusFilter.length || hazardFilter.length || severityFilter.length;
+  const hasFilters = search || statusFilter.length || hazardFilter.length || severityFilter.length || stateFilter || startDate || endDate;
 
   return (
     <div className="animate-fade-in">
@@ -108,6 +118,25 @@ export function AnalystReports() {
                   {SEVERITY_LABELS[s]}
                 </button>
               ))}
+            </div>
+
+            {/* Location + date filters */}
+            <div className="flex flex-wrap items-center gap-3">
+              <Input
+                value={stateFilter}
+                onChange={(e) => { setStateFilter(e.target.value.toUpperCase()); setPage(1); }}
+                placeholder="State code (e.g. TN)"
+                className="w-40"
+                aria-label="Filter by state code"
+              />
+              <label className="flex items-center gap-2 text-xs text-muted-foreground">
+                From
+                <Input type="date" value={startDate} onChange={(e) => { setStartDate(e.target.value); setPage(1); }} className="w-40" aria-label="Observed from date" />
+              </label>
+              <label className="flex items-center gap-2 text-xs text-muted-foreground">
+                To
+                <Input type="date" value={endDate} onChange={(e) => { setEndDate(e.target.value); setPage(1); }} className="w-40" aria-label="Observed to date" />
+              </label>
             </div>
           </div>
         </CardContent>

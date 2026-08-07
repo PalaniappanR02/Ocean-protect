@@ -16,13 +16,13 @@ import { useToast } from '@/hooks/useToast';
 import { HAZARD_TYPE_LABELS, type ReportStatus } from '@/types';
 import {
   CheckCircle, XCircle, MapPin, Clock, User, Phone, Globe,
-  FileWarning, RefreshCw, ArrowLeft, AlertTriangle, FileText, Tag,
+  FileWarning, RefreshCw, ArrowLeft, AlertTriangle, FileText, Tag, Image as ImageIcon,
 } from 'lucide-react';
 import { formatDateTime, formatRelativeTime } from '@/lib/utils';
 import { useState } from 'react';
 
 export function ReportDetail() {
-  const { id } = useParams<{ id: string }>();
+  const { reportId } = useParams<{ reportId: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -31,9 +31,9 @@ export function ReportDetail() {
   const [recalculating, setRecalculating] = useState(false);
 
   const { data: report, isLoading } = useQuery({
-    queryKey: ['report', id],
-    queryFn: () => reportService.getById(id!),
-    enabled: !!id,
+    queryKey: ['report', reportId],
+    queryFn: () => reportService.getById(reportId!),
+    enabled: !!reportId,
   });
 
   if (isLoading) {
@@ -50,7 +50,7 @@ export function ReportDetail() {
 
   const handleVerify = async () => {
     await reportService.updateStatus(report.id, 'verified', { verifiedBy: 'Demo Analyst' });
-    queryClient.invalidateQueries({ queryKey: ['report', id] });
+    queryClient.invalidateQueries({ queryKey: ['report', reportId] });
     queryClient.invalidateQueries({ queryKey: ['reports'] });
     toast({ title: 'Report Verified', description: 'The report is now public', variant: 'success' });
   };
@@ -61,7 +61,7 @@ export function ReportDetail() {
       return;
     }
     await reportService.updateStatus(report.id, 'rejected', { verifiedBy: 'Demo Analyst', rejectionReason });
-    queryClient.invalidateQueries({ queryKey: ['report', id] });
+    queryClient.invalidateQueries({ queryKey: ['report', reportId] });
     queryClient.invalidateQueries({ queryKey: ['reports'] });
     toast({ title: 'Report Rejected', variant: 'destructive' });
     setShowRejectInput(false);
@@ -71,7 +71,7 @@ export function ReportDetail() {
   const handleRecalculate = async () => {
     setRecalculating(true);
     await reportService.recalculateConfidence(report.id);
-    queryClient.invalidateQueries({ queryKey: ['report', id] });
+    queryClient.invalidateQueries({ queryKey: ['report', reportId] });
     setRecalculating(false);
     toast({ title: 'Confidence Recalculated', variant: 'success' });
   };
@@ -159,6 +159,56 @@ export function ReportDetail() {
               <p className="whitespace-pre-wrap text-sm text-slate-200">{report.description}</p>
             </CardContent>
           </Card>
+
+          {/* Uploaded evidence (photos + video) */}
+          {report.mediaUrls && report.mediaUrls.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <ImageIcon className="h-4 w-4" /> Evidence ({report.mediaUrls.length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                  {report.mediaUrls.map((media) => {
+                    const isVideo =
+                      String(media.contentType || '').startsWith('video/') ||
+                      String(media.url || '').match(/\.(mp4|webm|mov|ogg)(\?|$)/i);
+                    return isVideo ? (
+                      <video
+                        key={media.url}
+                        src={media.url}
+                        controls
+                        muted
+                        playsInline
+                        preload="metadata"
+                        className="aspect-video w-full rounded-lg border border-slate-700 bg-black object-contain"
+                        aria-label={media.filename || 'Uploaded video evidence'}
+                      />
+                    ) : (
+                      <a
+                        key={media.url}
+                        href={media.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="group relative block overflow-hidden rounded-lg border border-slate-700"
+                      >
+                        <img
+                          src={media.url}
+                          alt={media.filename || 'Uploaded evidence'}
+                          loading="lazy"
+                          className="aspect-video w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        />
+                        <span className="absolute bottom-0 right-0 rounded-tl-lg bg-black/60 px-2 py-0.5 text-[10px] text-white opacity-0 transition-opacity group-hover:opacity-100">
+                          Open
+                        </span>
+                      </a>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Map */}
           <Card>

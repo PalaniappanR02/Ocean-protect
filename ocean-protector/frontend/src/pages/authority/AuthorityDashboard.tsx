@@ -25,8 +25,9 @@ import { HAZARD_TYPE_LABELS, SEVERITY_COLORS } from '@/types';
 import { formatRelativeTime } from '@/lib/utils';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, Legend,
+  PieChart, Pie, Cell, Legend, LineChart, Line,
 } from 'recharts';
+import { useMemo } from 'react';
 import { ResponseTimeline } from '@/components/features/ResponseTimeline';
 
 export function AuthorityDashboard() {
@@ -60,6 +61,29 @@ export function AuthorityDashboard() {
     count,
   })) ?? [];
 
+  // Incident trend over the last 7 days (derived from live incident data).
+  const trendData = useMemo(() => {
+    const days: { label: string; incidents: number }[] = [];
+    for (let i = 6; i >= 0; i--) {
+      const start = new Date();
+      start.setHours(0, 0, 0, 0);
+      start.setDate(start.getDate() - i);
+      const end = new Date(start);
+      end.setDate(end.getDate() + 1);
+      const count = (incidents || []).filter((incident) => {
+        const time = new Date(incident.createdAt).getTime();
+        return time >= start.getTime() && time < end.getTime();
+      }).length;
+      days.push({
+        label: start.toLocaleDateString(undefined, { weekday: 'short' }),
+        incidents: count,
+      });
+    }
+    return days;
+  }, [incidents]);
+
+  const totalSeverity = severityData.reduce((sum, entry) => sum + entry.value, 0);
+
   return (
     <div className="animate-fade-in space-y-6">
       <AuthorityHero activeIncidents={incidents?.length || 0} teamsDeployed={incidents?.filter(i => i.responseTeams?.length).length || 0} criticalAlerts={criticalAlerts} readiness={88} />
@@ -73,41 +97,46 @@ export function AuthorityDashboard() {
         ]} />
       </DashboardSection>
 
-      {/* Charts Row */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        {/* Severity Distribution */}
+      {/* Charts Row — donut, line, bar */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        {/* Severity Distribution — donut */}
         <Card className="rounded-xl bg-gradient-to-br from-white/4 to-white/2">
           <CardHeader>
             <CardTitle>Current incident severity</CardTitle>
           </CardHeader>
           <CardContent>
             {severityData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={250}>
-                <PieChart>
-                  <defs>
-                    <linearGradient id="pieGradA" x1="0%" x2="100%">
-                      <stop offset="0%" stopColor="#06b6d4" />
-                      <stop offset="100%" stopColor="#7c3aed" />
-                    </linearGradient>
-                  </defs>
-                  <Pie
-                    data={severityData}
-                    dataKey="value"
-                    nameKey="name"
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={80}
-                    label={(entry: any) => `${entry.name}: ${entry.value}`}
-                  >
-                    {severityData.map((entry, i) => (
-                      <Cell key={i} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip wrapperStyle={{ outline: 'none' }} contentStyle={{ background: 'var(--color-paper-3)', border: '1px solid var(--color-rule)', borderRadius: '8px' }} />
-                </PieChart>
-              </ResponsiveContainer>
+              <div className="relative">
+                <ResponsiveContainer width="100%" height={230}>
+                  <PieChart>
+                    <Pie
+                      data={severityData}
+                      dataKey="value"
+                      nameKey="name"
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={62}
+                      outerRadius={88}
+                      paddingAngle={2}
+                      strokeWidth={0}
+                    >
+                      {severityData.map((entry, i) => (
+                        <Cell key={i} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      wrapperStyle={{ outline: 'none' }}
+                      contentStyle={{ background: 'var(--color-paper-3)', border: '1px solid var(--color-rule)', borderRadius: '8px' }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+                  <span className="font-mono text-2xl font-bold">{totalSeverity}</span>
+                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Incidents</span>
+                </div>
+              </div>
             ) : (
-              <div className="h-[250px] py-4">
+              <div className="h-[230px] py-4">
                 <EmptyState
                   icon={AlertTriangle}
                   title="No severity data"
@@ -119,23 +148,57 @@ export function AuthorityDashboard() {
           </CardContent>
         </Card>
 
-        {/* Hazard Types */}
+        {/* Incident Trend — line */}
+        <Card className="rounded-xl bg-gradient-to-br from-white/4 to-white/2">
+          <CardHeader>
+            <CardTitle>Incident trend</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={230}>
+              <LineChart data={trendData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-rule)" vertical={false} />
+                <XAxis dataKey="label" stroke="var(--color-muted)" fontSize={11} tickLine={false} axisLine={false} />
+                <YAxis stroke="var(--color-muted)" fontSize={11} tickLine={false} axisLine={false} allowDecimals={false} width={28} />
+                <Tooltip
+                  contentStyle={{
+                    background: 'var(--color-paper-3)',
+                    border: '1px solid var(--color-rule)',
+                    borderRadius: '8px',
+                  }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="incidents"
+                  name="Incidents"
+                  stroke="var(--color-accent)"
+                  strokeWidth={2.5}
+                  dot={{ r: 3, fill: 'var(--color-accent)' }}
+                  activeDot={{ r: 5 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        {/* Hazard Types — bar */}
         <Card className="rounded-xl bg-gradient-to-br from-white/4 to-white/2">
           <CardHeader>
             <CardTitle>Response demand by hazard type</CardTitle>
           </CardHeader>
           <CardContent>
             {hazardTypeData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={hazardTypeData} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--color-rule)" />
-                  <XAxis type="number" stroke="var(--color-muted)" fontSize={12} />
+              <ResponsiveContainer width="100%" height={230}>
+                <BarChart data={hazardTypeData} layout="vertical" margin={{ left: 0, right: 8 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--color-rule)" horizontal={false} />
+                  <XAxis type="number" stroke="var(--color-muted)" fontSize={11} tickLine={false} axisLine={false} allowDecimals={false} />
                   <YAxis
                     type="category"
                     dataKey="name"
                     stroke="var(--color-muted)"
-                    fontSize={11}
-                    width={100}
+                    fontSize={10}
+                    width={88}
+                    tickLine={false}
+                    axisLine={false}
                   />
                   <Tooltip
                     contentStyle={{
@@ -144,11 +207,11 @@ export function AuthorityDashboard() {
                       borderRadius: '8px',
                     }}
                   />
-                  <Bar dataKey="count" fill="var(--color-accent)" radius={[0, 4, 4, 0]} />
+                  <Bar dataKey="count" fill="var(--color-accent)" radius={[0, 4, 4, 0]} barSize={16} />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-[250px] py-4">
+              <div className="h-[230px] py-4">
                 <EmptyState
                   icon={MapIcon}
                   title="No hazard demand data"

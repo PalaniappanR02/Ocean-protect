@@ -48,7 +48,7 @@ export function ReportTracking() {
           <CardContent>
             <form className="space-y-4" onSubmit={handleTrackingSearch}>
               <div className="space-y-2">
-                <Label htmlFor="trackingId">OceanGuard tracking ID</Label>
+                <Label htmlFor="trackingId">Kadalkavach tracking ID</Label>
                 <Input
                   id="trackingId"
                   value={trackingInput}
@@ -165,6 +165,60 @@ export function ReportTracking() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Uploaded evidence (photos + video) */}
+      {report.mediaUrls && report.mediaUrls.length > 0 && (
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Your Evidence ({report.mediaUrls.length})</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              {report.mediaUrls.map((media) => {
+                const isVideo =
+                  String(media.contentType || '').startsWith('video/') ||
+                  String(media.url || '').match(/\.(mp4|webm|mov|ogg)(\?|$)/i);
+                return isVideo ? (
+                  <video
+                    key={media.url}
+                    src={media.url}
+                    controls
+                    muted
+                    playsInline
+                    preload="metadata"
+                    className="aspect-video w-full rounded-lg border border-slate-700 bg-black object-contain"
+                    aria-label={media.filename || 'Uploaded video evidence'}
+                  />
+                ) : (
+                  <a
+                    key={media.url}
+                    href={media.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="group relative block overflow-hidden rounded-lg border border-slate-700"
+                  >
+                    <img
+                      src={media.url}
+                      alt={media.filename || 'Uploaded evidence'}
+                      loading="lazy"
+                      className="aspect-video w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                    {media.latitude !== undefined && media.longitude !== undefined && (
+                      <span className="absolute bottom-0 left-0 flex items-center gap-1 rounded-tr-lg bg-black/70 px-2 py-0.5 text-[10px] font-semibold text-cyan-300">
+                        <MapPin className="h-3 w-3" aria-hidden="true" />
+                        Geotagged
+                      </span>
+                    )}
+                    <span className="absolute bottom-0 right-0 rounded-tl-lg bg-black/60 px-2 py-0.5 text-[10px] text-white opacity-0 transition-opacity group-hover:opacity-100">
+                      Open
+                    </span>
+                  </a>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Timeline */}
       <Card>

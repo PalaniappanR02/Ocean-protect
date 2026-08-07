@@ -9,6 +9,8 @@ interface HazardMapProps {
   reports?: HazardReport[];
   incidents?: Incident[];
   regions?: CoastalRegion[];
+  /** DBSCAN social-signal clusters: { clusterId, signalCount, latitude, longitude } */
+  hotspots?: Array<{ clusterId: string; signalCount: number; latitude: number; longitude: number }>;
   center?: [number, number];
   zoom?: number;
   className?: string;
@@ -19,6 +21,7 @@ export function HazardMap({
   reports = [],
   incidents = [],
   regions = [],
+  hotspots = [],
   center = [12.5, 79.0],
   zoom = 6,
   className = 'h-[600px]',
@@ -87,6 +90,35 @@ export function HazardMap({
                     <div className="mt-1 text-xs text-muted-foreground">{report.districtName}, {report.stateCode}</div>
                     <div className="mt-1 text-xs text-muted-foreground">{formatRelativeTime(report.observedAt)}</div>
                   </div>
+                </div>
+              </div>
+            </Popup>
+          </CircleMarker>
+        );
+      })}
+
+      {/* Dynamic hotspots — DBSCAN clusters of social signals */}
+      {hotspots.map((hotspot) => {
+        const radius = Math.min(26, 10 + hotspot.signalCount * 2.5);
+        return (
+          <CircleMarker
+            key={hotspot.clusterId}
+            center={[hotspot.latitude, hotspot.longitude]}
+            radius={radius}
+            className="map-marker map-marker--hotspot"
+            pathOptions={{
+              color: '#f59e0b',
+              fillColor: '#f59e0b',
+              fillOpacity: 0.35,
+              weight: 2,
+              dashArray: '4 4',
+            }}
+          >
+            <Popup className="map-popup">
+              <div className="map-popup-card">
+                <div className="font-semibold text-sm">Signal hotspot</div>
+                <div className="mt-1 text-xs text-muted-foreground">
+                  {hotspot.signalCount} correlated social signals
                 </div>
               </div>
             </Popup>

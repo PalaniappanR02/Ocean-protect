@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 const DropdownMenu = DropdownMenuPrimitive.Root;
 const DropdownMenuTrigger = DropdownMenuPrimitive.Trigger;
 const DropdownMenuGroup = DropdownMenuPrimitive.Group;
+const DropdownMenuSeparator = DropdownMenuPrimitive.Separator;
 const DropdownMenuSubTrigger = DropdownMenuPrimitive.SubTrigger;
 const DropdownMenuSubContent = DropdownMenuPrimitive.SubContent;
 
@@ -18,7 +19,7 @@ const DropdownMenuContent = React.forwardRef<
       ref={ref}
       sideOffset={sideOffset}
       className={cn(
-        'popover-surface z-50 min-w-[10rem] overflow-hidden p-1.5 text-popover-foreground',
+        'popover-surface z-50 min-w-[10rem] max-h-[min(70vh,32rem)] overflow-y-auto overflow-x-hidden overscroll-contain p-1.5 text-popover-foreground',
         className
       )}
       {...props}
@@ -42,4 +43,4 @@ const DropdownMenuItem = React.forwardRef<
 ));
 DropdownMenuItem.displayName = DropdownMenuPrimitive.Item.displayName;
 
-export { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuGroup };
+export { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuGroup, DropdownMenuSeparator };

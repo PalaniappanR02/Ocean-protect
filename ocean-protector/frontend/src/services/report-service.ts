@@ -30,6 +30,8 @@ export interface CreateReportInput {
     filename: string;
     contentType: string;
     size: number;
+    latitude?: number;
+    longitude?: number;
   }>;
 }
 
@@ -82,6 +84,21 @@ interface ReportListResponse extends ApiResponse<ApiReport[]> {
     totalPages?: number;
   };
 }
+
+const fetchReportPage = async (url: string, query: ReportQuery): Promise<PaginatedResponse<HazardReport>> => {
+  const response = await api.get<ReportListResponse>(url);
+  const page = response.meta?.page ?? query.page ?? 1;
+  const pageSize = response.meta?.limit ?? response.meta?.pageSize ?? query.pageSize ?? 20;
+  const total = response.meta?.total ?? response.data.length;
+
+  return {
+    items: response.data.map(normaliseReport),
+    total,
+    page,
+    pageSize,
+    totalPages: response.meta?.totalPages ?? Math.max(1, Math.ceil(total / pageSize)),
+  };
+};
 
 const asNumber = (value: unknown, fallback = 0): number => {
   const parsed = Number(value);
@@ -158,7 +175,11 @@ export const reportService = {
       locationSource: input.locationSource ?? 'device_gps',
       observedAt: input.observedAt,
       severity: 'advisory' as Severity,
-      mediaUrls: (input.mediaUrls ?? []).map((media) => media.url),
+      mediaUrls: (input.mediaUrls ?? []).map((media) => ({
+        url: media.url,
+        latitude: media.latitude,
+        longitude: media.longitude,
+      })),
     };
 
     const response = await api.post<ApiResponse<ApiReport>>('/api/v1/reports', payload);
@@ -169,20 +190,11 @@ export const reportService = {
     filters: ReportFilters = {},
     query: ReportQuery = {},
   ): Promise<PaginatedResponse<HazardReport>> {
-    const response = await api.get<ReportListResponse>(
-      `/api/v1/reports?${buildListQuery(filters, query)}`,
-    );
-    const page = response.meta?.page ?? query.page ?? 1;
-    const pageSize = response.meta?.limit ?? response.meta?.pageSize ?? query.pageSize ?? 20;
-    const total = response.meta?.total ?? response.data.length;
+    return fetchReportPage(`/api/v1/reports?${buildListQuery(filters, query)}`, query);
+  },
 
-    return {
-      items: response.data.map(normaliseReport),
-      total,
-      page,
-      pageSize,
-      totalPages: response.meta?.totalPages ?? Math.max(1, Math.ceil(total / pageSize)),
-    };
+  async listMine(query: ReportQuery = {}): Promise<PaginatedResponse<HazardReport>> {
+    return fetchReportPage(`/api/v1/reports/mine?${buildListQuery({}, query)}`, query);
   },
 
   async getById(id: string): Promise<HazardReport> {
@@ -212,7 +224,7 @@ export const reportService = {
         status,
         reason: metadata?.rejectionReason ?? metadata?.publicVisibilityReason ?? '',
         actorType: 'analyst',
-        actorName: metadata?.verifiedBy ?? 'OceanGuard analyst',
+        actorName: metadata?.verifiedBy ?? 'Kadalkavach analyst',
       },
     );
     return normaliseReport(response.data);

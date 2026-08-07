@@ -50,13 +50,16 @@ const runMigrations = async () => {
       );
     `);
 
-    // Works from source (backend/api/src/database), compiled output
-    // (backend/api/dist/database), and the local Docker image (/app/database).
+    // Works from source (backend/api/src/database -> backend/database),
+    // compiled output (backend/api/dist/database -> backend/database), and
+    // the local Docker image (cwd=/app -> /app/database). The repo root
+    // backend/database must be preferred so stale api/database dirs cannot
+    // shadow the real migrations.
     const databaseRoot = firstExistingDirectory([
-      path.resolve(__dirname, '../../database'),
       path.resolve(__dirname, '../../../database'),
-      path.resolve(process.cwd(), 'database'),
+      path.resolve(__dirname, '../../database'),
       path.resolve(process.cwd(), '../database'),
+      path.resolve(process.cwd(), 'database'),
     ]);
 
     if (!databaseRoot) {

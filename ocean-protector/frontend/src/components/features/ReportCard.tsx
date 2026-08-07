@@ -41,6 +41,39 @@ export function ReportCard({ report, to, compact = false }: ReportCardProps) {
           {!compact && (
             <p className="mb-3 line-clamp-2 text-sm text-muted-foreground">{report.description}</p>
           )}
+          {report.mediaUrls && report.mediaUrls.length > 0 && (
+            <div className="mb-3 flex gap-2">
+              {report.mediaUrls.slice(0, 3).map((media) => {
+                const isVideo =
+                  String(media.contentType || '').startsWith('video/') ||
+                  String(media.url || '').match(/\.(mp4|webm|mov|ogg)(\?|$)/i);
+                return isVideo ? (
+                  <video
+                    key={media.url}
+                    src={media.url}
+                    muted
+                    playsInline
+                    preload="metadata"
+                    className="h-16 w-24 rounded-md border border-slate-800 bg-black object-cover"
+                    aria-label={media.filename || 'Uploaded video evidence'}
+                  />
+                ) : (
+                  <img
+                    key={media.url}
+                    src={media.url}
+                    alt={media.filename || 'Uploaded evidence'}
+                    loading="lazy"
+                    className="h-16 w-24 rounded-md border border-slate-800 object-cover"
+                  />
+                );
+              })}
+              {report.mediaUrls.length > 3 && (
+                <span className="flex h-16 w-24 items-center justify-center rounded-md border border-slate-800 bg-muted text-xs font-medium text-muted-foreground">
+                  +{report.mediaUrls.length - 3}
+                </span>
+              )}
+            </div>
+          )}
           <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
             <span className="flex items-center gap-1">
               <MapPin className="h-3 w-3" aria-hidden="true" />
@@ -70,9 +103,12 @@ export function ReportCard({ report, to, compact = false }: ReportCardProps) {
 }
 export function EvidenceCard({ media }: { media: any }) {
   const isImage = String(media?.contentType || '').startsWith('image/');
+  const isVideo = String(media?.contentType || '').startsWith('video/') || String(media?.url || '').match(/\.(mp4|webm|mov|ogg)(\?|$)/i);
   return (
     <div className="overflow-hidden rounded-lg border border-slate-800 bg-slate-950">
-      {isImage && media?.url ? (
+      {isVideo && media?.url ? (
+        <video src={media.url} muted playsInline preload="metadata" className="h-28 w-full object-cover" aria-label={media.filename || 'Incident video evidence'} />
+      ) : isImage && media?.url ? (
         <img src={media.url} alt={media.filename || 'Incident evidence'} width="448" height="112" loading="lazy" className="h-28 w-full object-cover" />
       ) : (
         <div className="flex h-28 items-center justify-center px-3 text-center text-xs text-slate-500">

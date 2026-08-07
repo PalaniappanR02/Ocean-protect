@@ -6,6 +6,10 @@ export interface ClassificationResult {
   predictedHazardType: string;
   relevanceScore: number;
   urgencyScore: number;
+  sentimentScore?: number;
+  engagementScore?: number;
+  misinfoScore?: number;
+  topKeywords?: string[];
   matchedKeywords: string[];
   supportedLanguage: boolean;
   analysisMode: string;

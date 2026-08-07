@@ -103,6 +103,21 @@ const mockReportService = {
     return reports.find((r) => r.trackingId === trackingId) || null;
   },
 
+  async listMine(query: ReportQuery = {}): Promise<PaginatedResponse<HazardReport>> {
+    await delay(200);
+    const page = query.page || 1;
+    const pageSize = query.pageSize || 20;
+    const start = (page - 1) * pageSize;
+    const items = reports.slice(start, start + pageSize);
+    return {
+      items,
+      total: reports.length,
+      page,
+      pageSize,
+      totalPages: Math.ceil(reports.length / pageSize),
+    };
+  },
+
   async create(input: {
     clientReportId?: string;
     hazardType: HazardType;

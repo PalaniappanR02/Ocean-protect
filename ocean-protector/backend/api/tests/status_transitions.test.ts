@@ -1,12 +1,23 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
+import { describe, it, expect, afterAll, beforeEach, vi } from 'vitest';
 import request from 'supertest';
+
+// Simulate an authenticated analyst for protected routes. Production auth
+// middleware is untouched; this test double only exists for integration tests.
+vi.mock('../src/common/middleware/auth', () => ({
+  verifyToken: (req: any, _res: any, next: any) => {
+    req.user = { id: 'test-analyst-user', role: 'analyst' };
+    next();
+  },
+  requireRole: () => (_req: any, _res: any, next: any) => next(),
+  attachUserIfPresent: (_req: any, _res: any, next: any) => next(),
+}));
+
 import { createApp } from '../src/app';
 import { pool } from '../src/database/pool';
 import { cleanDatabase, closeTestPool } from './setup';
 
 const app = createApp();
 
-beforeAll(async () => {});
 afterAll(async () => {
   await closeTestPool();
   await pool.end();
@@ -65,6 +76,6 @@ describe('Report Status Transitions', () => {
       .send({ status: 'under_review', reason: 'Reviewing' });
 
     expect(patchRes.status).toBe(200);
-    expect(patchRes.body.data.newStatus).toBe('under_review');
+    expect(patchRes.body.data.status).toBe('under_review');
   });
 });

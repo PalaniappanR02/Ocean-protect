@@ -6,19 +6,20 @@ import { z } from 'zod';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Input, Label, Textarea } from '@/components/ui';
-import FloatingInput from '@/components/form/FloatingInput';
 import FloatingTextarea from '@/components/form/FloatingTextarea';
 import FileDropzone from '@/components/form/FileDropzone';
 import SeveritySelector from '@/components/form/SeveritySelector';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/useToast';
+import { useTranslation } from 'react-i18next';
 import { useGeolocation } from '@/hooks/useGeolocation';
 import { useNetworkStatus } from '@/hooks/useNetworkStatus';
 import { useOfflineQueue } from '@/hooks/useOfflineQueue';
+import { db } from '@/lib/db';
 import { reportService } from '@/services';
 import { getCoastalRegionByLocation } from '@/mock/coastalRegions';
-import { HAZARD_TYPE_LABELS, type HazardType } from '@/types';
+import { HAZARD_TYPE_LABELS, type HazardType, type MediaUrl } from '@/types';
 import {
   ArrowLeft,
   ArrowRight,
@@ -53,12 +54,15 @@ type ReportForm = z.infer<typeof reportSchema>;
 export function ReportHazard() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { i18n } = useTranslation();
   const { getLocation, latitude, longitude, accuracy, loading: geoLoading } = useGeolocation();
   const isOnline = useNetworkStatus();
   const { addToQueue } = useOfflineQueue();
   const [submitting, setSubmitting] = useState(false);
   const [step, setStep] = useState(0);
   const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lon: number } | null>(null);
+  const [mediaUrls, setMediaUrls] = useState<MediaUrl[]>([]);
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
 
   const {
     register,
@@ -77,6 +81,64 @@ export function ReportHazard() {
 
   const isAnonymous = watch('isAnonymous');
   const formValues = watch();
+  const [draftLoaded, setDraftLoaded] = useState(false);
+
+  // Restore the most recent draft from IndexedDB on mount.
+  useEffect(() => {
+    const loadDraft = async () => {
+      try {
+        const drafts = await db.drafts.orderBy('updatedAt').reverse().limit(1).toArray();
+        if (drafts.length) {
+          const draft = drafts[0];
+          if (draft.hazardType) setValue('hazardType', draft.hazardType as ReportForm['hazardType']);
+          if (draft.title) setValue('title', draft.title);
+          if (draft.description) setValue('description', draft.description);
+          setValue('isAnonymous', draft.isAnonymous);
+          if (draft.reporterName) setValue('reporterName', draft.reporterName);
+          if (draft.reporterPhone) setValue('reporterPhone', draft.reporterPhone);
+          if (draft.latitude !== undefined && draft.longitude !== undefined) {
+            setSelectedLocation({ lat: draft.latitude, lon: draft.longitude });
+          }
+          if (draft.mediaUrls?.length) setMediaUrls(draft.mediaUrls);
+        }
+      } catch {
+        // Draft restore is best-effort.
+      }
+      setDraftLoaded(true);
+    };
+    void loadDraft();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Debounced autosave to IndexedDB so refresh/restart never loses a draft.
+  useEffect(() => {
+    if (!draftLoaded) return;
+    const timer = setTimeout(async () => {
+      const hasContent = formValues.title || formValues.description || mediaUrls.length > 0 || selectedLocation;
+      if (!hasContent) return;
+      try {
+        await db.drafts.put({
+          clientReportId: crypto.randomUUID(),
+          hazardType: formValues.hazardType,
+          title: formValues.title || '',
+          description: formValues.description || '',
+          languageCode: 'en',
+          isAnonymous: formValues.isAnonymous,
+          reporterName: formValues.reporterName,
+          reporterPhone: formValues.reporterPhone,
+          latitude: selectedLocation?.lat,
+          longitude: selectedLocation?.lon,
+          locationSource: 'device_gps',
+          mediaUrls,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        });
+      } catch {
+        // Ignore draft autosave failures.
+      }
+    }, 900);
+    return () => clearTimeout(timer);
+  }, [formValues, mediaUrls, selectedLocation, draftLoaded]);
 
   const moveToStep = (nextStep: number) => {
     setStep(nextStep);
@@ -124,7 +186,7 @@ export function ReportHazard() {
         hazardType: data.hazardType,
         title: data.title,
         description: data.description,
-        languageCode: 'en',
+        languageCode: i18n.language,
         isAnonymous: data.isAnonymous,
         reporterName: data.isAnonymous ? undefined : data.reporterName,
         reporterPhone: data.isAnonymous ? undefined : data.reporterPhone,
@@ -135,16 +197,26 @@ export function ReportHazard() {
         stateCode: region?.stateCode || 'TN',
         districtName: region?.districtName || 'Unknown',
         observedAt,
-        mediaUrls: [],
+        mediaUrls,
       };
 
       if (!isOnline) {
-        await addToQueue(reportPayload);
+        await addToQueue({
+          ...reportPayload,
+          mediaUrls: [],
+          mediaFiles: pendingFiles.map((file) => ({
+            name: file.name,
+            type: file.type,
+            size: file.size,
+            data: file,
+          })),
+        });
         navigate('/citizen/offline');
         return;
       }
 
       const report = await reportService.create(reportPayload);
+      await db.drafts.clear();
       toast({
         title: 'Report received',
         description: `Tracking ID: ${report.trackingId}`,
@@ -195,13 +267,43 @@ export function ReportHazard() {
 
         {step === 1 && (
           <Card>
-            <CardHeader>
+            <CardHeader className="flex items-center justify-between gap-3">
               <CardTitle>Describe what happened</CardTitle>
+              <div className="flex items-center gap-2">
+                <label htmlFor="reportLanguage" className="text-xs text-muted-foreground">
+                  Report language
+                </label>
+                <select
+                  id="reportLanguage"
+                  value={i18n.language}
+                  onChange={(e) => i18n.changeLanguage(e.target.value)}
+                  className="rounded-lg border border-slate-700 bg-slate-900 px-2 py-1.5 text-sm text-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                >
+                  <option value="en">English</option>
+                  <option value="ta">தமிழ்</option>
+                  <option value="ml">മലയാളം</option>
+                  <option value="kn">ಕನ್ನಡ</option>
+                  <option value="te">తెలుగు</option>
+                </select>
+              </div>
             </CardHeader>
             <CardContent className="space-y-5">
               <div className="space-y-3">
                 <div>
-                  <FloatingInput id="title" label="Short summary" icon={FileWarning} aria-required="true" aria-invalid={Boolean(errors.title)} aria-describedby="title-help" {...register('title')} />
+                  <div className="space-y-2">
+                    <Label htmlFor="title" className="flex items-center gap-1.5">
+                      <FileWarning className="h-3.5 w-3.5" aria-hidden="true" />
+                      Short summary
+                    </Label>
+                    <Input
+                      id="title"
+                      aria-required="true"
+                      aria-invalid={Boolean(errors.title)}
+                      aria-describedby="title-help"
+                      placeholder="Name the hazard and the place where possible"
+                      {...register('title')}
+                    />
+                  </div>
                   <p id="title-help" className={cn('min-h-[1lh] text-xs', errors.title ? 'text-destructive' : 'text-muted-foreground')}>
                     {errors.title?.message || 'Name the hazard and the place where possible.'}
                   </p>
@@ -215,7 +317,12 @@ export function ReportHazard() {
                 </div>
 
                 <div>
-                  <FileDropzone onFiles={(files)=>{ /* preview only - not uploaded */ }} />
+                  <FileDropzone
+                    value={mediaUrls}
+                    onChange={setMediaUrls}
+                    onPendingFiles={setPendingFiles}
+                    location={selectedLocation ? { latitude: selectedLocation.lat, longitude: selectedLocation.lon } : null}
+                  />
                 </div>
               </div>
             </CardContent>
@@ -251,7 +358,7 @@ export function ReportHazard() {
                 </Button>
               )}
               <p className="mt-4 text-xs leading-5 text-muted-foreground">
-                OceanGuard uses these coordinates to identify the coastal district and compare nearby reports.
+                Kadalkavach uses these coordinates to identify the coastal district and compare nearby reports.
               </p>
             </CardContent>
           </Card>

@@ -1,9 +1,26 @@
 import { Router } from 'express';
-import { findAllRegions, findRegionById } from './region.repository';
+import { findAllRegions, findRegionById, findNearestRegion } from './region.repository';
 import { mapRegionToResponse } from './region.mapper';
 import { AppError } from '../../common/errors/AppError';
 
 const router = Router();
+
+router.get('/nearest', async (req, res, next) => {
+  try {
+    const lat = Number(req.query.lat);
+    const lon = Number(req.query.lon);
+    if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+      throw new AppError(400, 'INVALID_COORDINATES', 'lat and lon query parameters are required.');
+    }
+    const region = await findNearestRegion(lat, lon);
+    if (!region) {
+      throw new AppError(404, 'REGION_NOT_FOUND', 'No active coastal region near these coordinates');
+    }
+    res.json({ success: true, data: mapRegionToResponse(region) });
+  } catch (error) {
+    next(error);
+  }
+});
 
 router.get('/', async (req, res, next) => {
   try {

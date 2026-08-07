@@ -1,4 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
+import { useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { StatCard } from '@/components/features/StatCard';
 import { DashboardCard } from '@/components/dashboard/DashboardCard';
@@ -23,11 +25,12 @@ import {
 import { formatRelativeTime } from '@/lib/utils';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, Legend,
+  PieChart, Pie, Cell, LineChart, Line,
 } from 'recharts';
 import { SEVERITY_COLORS, HAZARD_TYPE_LABELS, type Severity, type HazardType } from '@/types';
 
 export function AnalystDashboard() {
+  const navigate = useNavigate();
   const { data: stats } = useQuery({
     queryKey: ['reportStats'],
     queryFn: () => reportService.getDashboardStats(),
@@ -55,13 +58,36 @@ export function AnalystDashboard() {
   const severityData = stats?.bySeverity.map((s) => ({
     name: s.severity.charAt(0).toUpperCase() + s.severity.slice(1),
     value: s.count,
-    color: SEVERITY_COLORS[s.severity as Severity],
+    color: SEVERITY_COLORS[s.severity as Severity] ?? '#64748b',
   })) || [];
 
   const hazardTypeData = stats?.byHazardType.map((h) => ({
-    name: HAZARD_TYPE_LABELS[h.hazardType as HazardType].split(' ')[0],
+    name: HAZARD_TYPE_LABELS[h.hazardType as HazardType],
     count: h.count,
   })) || [];
+
+  // Incident trend over the last 7 days (derived from live incident data).
+  const trendData = useMemo(() => {
+    const days: { label: string; incidents: number }[] = [];
+    for (let i = 6; i >= 0; i--) {
+      const start = new Date();
+      start.setHours(0, 0, 0, 0);
+      start.setDate(start.getDate() - i);
+      const end = new Date(start);
+      end.setDate(end.getDate() + 1);
+      const count = (recentIncidents || []).filter((incident) => {
+        const time = new Date(incident.createdAt).getTime();
+        return time >= start.getTime() && time < end.getTime();
+      }).length;
+      days.push({
+        label: start.toLocaleDateString(undefined, { weekday: 'short' }),
+        incidents: count,
+      });
+    }
+    return days;
+  }, [recentIncidents]);
+
+  const totalSeverity = severityData.reduce((sum, entry) => sum + entry.value, 0);
 
   return (
     <div className="animate-fade-in">
@@ -91,9 +117,9 @@ export function AnalystDashboard() {
           <HeatmapPreview reports={pendingReports?.items} incidents={recentIncidents} regions={regions} />
 
           <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
-            <QuickActionCard Icon={FileWarning} label="Verify reports" description="Open verification workflow" onActivate={() => window.location.assign('/analyst/reports')} />
-            <QuickActionCard Icon={Activity} label="Open Map" description="Full map view" onActivate={() => window.location.assign('/analyst/map')} />
-            <QuickActionCard Icon={TrendingUp} label="Generate Alert" description="Trigger a public alert" onActivate={() => window.location.assign('/analyst/alerts/new')} />
+            <QuickActionCard Icon={FileWarning} label="Verify reports" description="Open verification workflow" onActivate={() => navigate('/analyst/reports')} />
+            <QuickActionCard Icon={Radio} label="Social signals" description="Review live intelligence" onActivate={() => navigate('/analyst/social')} />
+            <QuickActionCard Icon={Activity} label="Open Map" description="Full map view" onActivate={() => navigate('/analyst/map')} />
           </div>
         </div>
 
@@ -114,52 +140,95 @@ export function AnalystDashboard() {
         </div>
       </div>
 
-      {/* Decision-support charts */}
-      <div className="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
+      {/* Decision-support charts — donut, line, bar */}
+      <div className="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
+        {/* Severity distribution — donut (no external labels, so slices can never overlap) */}
         <Card>
           <CardHeader>
-            <CardTitle>Where verification attention is concentrated</CardTitle>
+            <CardTitle>Report severity</CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={250}>
-              <PieChart>
-                <defs>
-                  <linearGradient id="pieGrad1" x1="0%" x2="100%">
-                    <stop offset="0%" stopColor="#06b6d4" />
-                    <stop offset="100%" stopColor="#7c3aed" />
-                  </linearGradient>
-                </defs>
-                <Pie data={severityData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label={(e: any) => e.name}>
-                  {severityData.map((entry, i) => (
-                    <Cell key={i} fill={entry.color} />
-                  ))}
-                </Pie>
+            {severityData.length > 0 ? (
+              <>
+              <div className="relative">
+                <ResponsiveContainer width="100%" height={230}>
+                  <PieChart>
+                    <Pie
+                      data={severityData}
+                      dataKey="value"
+                      nameKey="name"
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={62}
+                      outerRadius={88}
+                      paddingAngle={2}
+                      strokeWidth={0}
+                    >
+                      {severityData.map((entry, i) => (
+                        <Cell key={i} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip wrapperStyle={{ outline: 'none' }} contentStyle={{ background: 'var(--color-paper-3)', border: '1px solid var(--color-rule)', borderRadius: 'var(--radius-control)' }} />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+                  <span className="font-mono text-2xl font-bold">{totalSeverity}</span>
+                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Reports</span>
+                </div>
+              </div>
+              <div className="mt-2 flex flex-wrap justify-center gap-x-3 gap-y-1">
+                {severityData.map((entry) => (
+                  <span key={entry.name} className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                    <span className="h-2 w-2 rounded-full" style={{ background: entry.color }} aria-hidden="true" />
+                    {entry.name}
+                    <span className="font-mono text-foreground">{entry.value}</span>
+                  </span>
+                ))}
+              </div>
+              </>
+            ) : (
+              <div className="h-[230px]" />
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Incident trend — line */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Incident trend</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={230}>
+              <LineChart data={trendData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-rule)" vertical={false} />
+                <XAxis dataKey="label" stroke="var(--color-muted)" fontSize={11} tickLine={false} axisLine={false} />
+                <YAxis stroke="var(--color-muted)" fontSize={11} tickLine={false} axisLine={false} allowDecimals={false} width={28} />
                 <Tooltip wrapperStyle={{ outline: 'none' }} contentStyle={{ background: 'var(--color-paper-3)', border: '1px solid var(--color-rule)', borderRadius: 'var(--radius-control)' }} />
-              </PieChart>
+                <Line type="monotone" dataKey="incidents" name="Incidents" stroke="var(--color-accent)" strokeWidth={2.5} dot={{ r: 3, fill: 'var(--color-accent)' }} activeDot={{ r: 5 }} />
+              </LineChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
 
+        {/* Incoming evidence by hazard type — horizontal bar, readable labels */}
         <Card>
           <CardHeader>
             <CardTitle>Incoming evidence by hazard type</CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={hazardTypeData}>
-                <defs>
-                  <linearGradient id="barGrad" x1="0" x2="1">
-                    <stop offset="0%" stopColor="#06b6d4" stopOpacity={0.95} />
-                    <stop offset="100%" stopColor="#7c3aed" stopOpacity={0.95} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-rule)" />
-                <XAxis dataKey="name" tick={{ fill: 'var(--color-neutral)', fontSize: 11 }} angle={-45} textAnchor="end" height={60} />
-                <YAxis tick={{ fill: 'var(--color-neutral)' }} />
-                <Tooltip wrapperStyle={{ outline: 'none' }} contentStyle={{ background: 'var(--color-paper-3)', border: '1px solid var(--color-rule)', borderRadius: 'var(--radius-control)' }} />
-                <Bar dataKey="count" fill="url(#barGrad)" radius={[8, 8, 8, 8]} />
-              </BarChart>
-            </ResponsiveContainer>
+            {hazardTypeData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={230}>
+                <BarChart data={hazardTypeData} layout="vertical" margin={{ left: 0, right: 8 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--color-rule)" horizontal={false} />
+                  <XAxis type="number" stroke="var(--color-muted)" fontSize={11} tickLine={false} axisLine={false} allowDecimals={false} />
+                  <YAxis type="category" dataKey="name" stroke="var(--color-muted)" fontSize={10} width={96} tickLine={false} axisLine={false} />
+                  <Tooltip wrapperStyle={{ outline: 'none' }} contentStyle={{ background: 'var(--color-paper-3)', border: '1px solid var(--color-rule)', borderRadius: 'var(--radius-control)' }} />
+                  <Bar dataKey="count" fill="var(--color-accent)" radius={[0, 4, 4, 0]} barSize={16} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-[230px]" />
+            )}
           </CardContent>
         </Card>
       </div>
@@ -180,7 +249,7 @@ export function AnalystDashboard() {
         <TabsContent value="incidents" className="mt-4">
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             {recentIncidents?.map((incident) => (
-              <IncidentCard key={incident.id} incident={incident} to={`/authority/incidents/${incident.id}`} />
+              <IncidentCard key={incident.id} incident={incident} />
             )) || <p className="text-sm text-muted-foreground">No active incidents</p>}
           </div>
         </TabsContent>
