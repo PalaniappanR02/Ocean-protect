@@ -72,6 +72,12 @@ services:
         value: https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png
       - key: VITE_MAP_ATTRIBUTION
         value: "&copy; OpenStreetMap &copy; CARTO"
+      # Supabase public (anon) credentials — the anon key is safe to embed: it
+      # ships inside every browser bundle and only gates public schema access.
+      - key: VITE_SUPABASE_URL
+        value: https://gddtcwatahvmzgbpagsc.supabase.co
+      - key: VITE_SUPABASE_ANON_KEY
+        value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkZHRjd2F0YWh2bXpnYnBhZ3NjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU5MTAwNzYsImV4cCI6MjEwMTQ4NjA3Nn0.8a4TgU10o6cuCFekV9Pj5CAYMKb4zWJdbvyiTsG-FBY
     routes:
       - type: rewrite
         source: /*
