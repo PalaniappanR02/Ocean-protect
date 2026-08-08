@@ -12,7 +12,8 @@
     "migrate": "tsx src/database/migrate.ts",
     "migrate:prod": "node dist/database/migrate.js",
     "seed:demo": "tsx src/scripts/seed-demo-users.ts",
-    "start:render": "npm run migrate:prod && npm start"
+    "seed:demo:prod": "node dist/scripts/seed-demo-users.js",
+    "start:render": "npm run migrate:prod && (npm run seed:demo:prod || echo 'Demo seed skipped (non-fatal)') && npm start"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.0",

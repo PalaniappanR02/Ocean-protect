@@ -36,6 +36,7 @@ const upsertInternalUser = async (supabaseUserId: string, email: string, role: s
 
 const run = async () => {
   try {
+    console.log('[demo-seed] Starting demo user seeding (idempotent)...');
     for (const demo of DEMO_USERS) {
       // Reuse the existing auth user if the email is already registered.
       const { data: existing } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 1000 });
@@ -63,9 +64,9 @@ const run = async () => {
       await upsertInternalUser(authUserId, demo.email, demo.role, demo.displayName, demo.organisationName, demo.jurisdictionStateCode);
       console.log(`Role ${demo.role} granted to ${demo.email}`);
     }
-    console.log('Demo user seeding complete.');
+    console.log('[demo-seed] Demo user seeding complete.');
   } catch (error) {
-    console.error('Demo seed failed:', error);
+    console.error('[demo-seed] Failed:', error);
     process.exitCode = 1;
   } finally {
     await pool.end();
