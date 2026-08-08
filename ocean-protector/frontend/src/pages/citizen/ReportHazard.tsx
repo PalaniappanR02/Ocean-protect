@@ -6,7 +6,6 @@ import { z } from 'zod';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Input, Label, Textarea } from '@/components/ui';
-import FloatingTextarea from '@/components/form/FloatingTextarea';
 import FileDropzone from '@/components/form/FileDropzone';
 import SeveritySelector from '@/components/form/SeveritySelector';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -23,6 +22,7 @@ import { HAZARD_TYPE_LABELS, type HazardType, type MediaUrl } from '@/types';
 import {
   ArrowLeft,
   ArrowRight,
+  Eye,
   FileWarning,
   Loader2,
   MapPin,
@@ -310,7 +310,21 @@ export function ReportHazard() {
                 </div>
 
                 <div>
-                  <FloatingTextarea id="description" label="What you saw" rows={5} aria-required="true" aria-invalid={Boolean(errors.description)} aria-describedby="description-help" {...register('description')} />
+                  <div className="space-y-2">
+                    <Label htmlFor="description" className="flex items-center gap-1.5">
+                      <Eye className="h-3.5 w-3.5" aria-hidden="true" />
+                      What you saw
+                    </Label>
+                    <Textarea
+                      id="description"
+                      rows={5}
+                      aria-required="true"
+                      aria-invalid={Boolean(errors.description)}
+                      aria-describedby="description-help"
+                      placeholder="Describe what you observed from a safe place"
+                      {...register('description')}
+                    />
+                  </div>
                   <p id="description-help" className={cn('min-h-[1lh] text-xs', errors.description ? 'text-destructive' : 'text-muted-foreground')}>
                     {errors.description?.message || 'Describe only what you can observe from a safe place.'}
                   </p>
