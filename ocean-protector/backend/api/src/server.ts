@@ -22,7 +22,11 @@ server.listen(env.PORT, () => {
  * reuses existing auth users and upserts their internal role.
  */
 function scheduleDemoSeed() {
-  if (env.NODE_ENV !== 'production') return;
+  // Run in any deployed environment (remote Postgres) even if NODE_ENV was
+  // misconfigured as 'development' in the dashboard. Local Docker/dev uses a
+  // localhost DB and keeps demo seeding opt-in.
+  const isRemoteDb = !/localhost|127\.0\.0\.1/i.test(env.DATABASE_URL);
+  if (env.NODE_ENV !== 'production' && !isRemoteDb) return;
 
   const seedPath = path.resolve(__dirname, 'scripts/seed-demo-users.js');
   const child = spawn(process.execPath, [seedPath], { stdio: 'inherit' });
